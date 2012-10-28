@@ -104,6 +104,7 @@ function output_json( $status, $output = null )
 		// Sadly, earlier versions need a bit of help
 		print( json_utf8_encode( $rv ) );
 	}
+	print( "\n" );
 	
 	exit( $status );
 }
