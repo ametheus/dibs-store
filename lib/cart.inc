@@ -27,11 +27,48 @@
 class Cart
 {
 	/** 
-	 * Create a new cart in the database, and return its ID
+	 * Create a new cart in the database, and return its ID.
+	 * 
+	 * A cart ID is a string satisfying the regex
+	 *    /([0-9a-zA-Z]{5}-){2,8}[0-9a-zA-Z]{1,5}/
+	 * and has nice cryptographic properties
+	 * 
+	 * @param int tries  The number of times to generate an ID until giving up.
 	 **/
-	static function create()
+	static function create( $tries = 10 )
 	{
-		return null;
+		global $db;
+		
+		if ( $tries < 1 ) return null;
+		
+		$rv = "";
+		for ( $i = 0; $i < 32; $i++ )
+			$rv .= chr(mt_rand(0,255));
+		
+		$rv = base64_encode( hash( "sha256", $rv, $raw = true ) );
+		// HACK: we actually need base62_encode.
+		$rv = str_replace( array("/","+","="), "", $rv );
+		
+		for( $i = 5; $i < strlen($rv); $i+= 6 )
+			$rv = substr($rv,0,$i) . "-" . substr($rv,$i);
+		
+		if ( strlen($rv) < 12 || Cart::exists( $rv ) )
+		{
+			// The possibility that we just found a SHA-256 collision is
+			// slightly unnerving, but irrelevant to the user.
+			// Just try again.
+			return self::create( $tries - 1 );
+		}
+		
+		// Great, we've managed to generate an ID.
+		// Now, create this cart in the database.
+		$db->carts->insert(array(
+			"cart-id" => $rv,
+			"created" => time(),
+			"ip-addr" => $_SERVER["REMOTE_ADDR"],
+		));
+		
+		return $rv;
 	}
 
 
