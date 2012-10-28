@@ -77,7 +77,11 @@ class Cart
 	 **/
 	static function exists( $cart_id )
 	{
-		return false;
+		global $db;
+		
+		return $db->carts->find( array(
+			"cart-id" => $cart_id
+		) )->count() > 0;
 	}
 
 
