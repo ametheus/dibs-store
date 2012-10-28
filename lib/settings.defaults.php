@@ -26,3 +26,24 @@
 	main dibs folder.
 */
 
+
+
+// The server (address and/or port) for mongodb, if not equal to localhost
+# $mongo_server = "mongo.example.org";
+
+
+// The database collection for the ticketing system
+$mongo_store = "dibs";
+
+// The hashing algorithm used for storing passwords
+$hash_algo = "sha256";
+// The number of times to run this algorithm
+$hash_count = 50000;
+
+/**
+ * $hash_algo and $hash_count should be tweaked such that generating a hash for
+ * a password takes about half a second on commodity hardware.
+ * Doing so greatly reduces vulnerability to rainbow tables.
+ **/
+
+

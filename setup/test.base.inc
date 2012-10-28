@@ -20,9 +20,25 @@
 */
 
 /*
-	Central request handler.
+	Base class for "tests", or Make targets.
 */
 
-require_once( "lib/mongo.inc" );
+abstract class TestBase
+{
+	public function get_dependencies()
+	{
+		return array();
+	}
+	
+	public $test_title = "Checking if all test have a test title. (Apparently not.)";
+	
+	public abstract function perform_test();
+	public $recoverable = false;
+	
+	public function fix_it()
+	{
+		throw new Exception("This test is specified as recoverable, however, " .
+			"no recovery method was given.");
+	}
+}
 
-print( "Dit is een gecontrolationeerde omgeving." );

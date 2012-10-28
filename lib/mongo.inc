@@ -20,9 +20,21 @@
 */
 
 /*
-	Central request handler.
+	Database connectivity.
 */
 
-require_once( "lib/mongo.inc" );
+require_once( "lib/settings.defaults.php" );
+@include_once( "settings.php" );
 
-print( "Dit is een gecontrolationeerde omgeving." );
+
+$mon = false;
+
+if ( isset($mongo_server) )
+	$mon = new Mongo($mongo_server);
+else
+	$mon = new Mongo();
+
+
+$db = $mon->{$mongo_store};
+
+
