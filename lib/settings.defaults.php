@@ -47,3 +47,9 @@ $hash_count = 50000;
  **/
 
 
+
+// The default MIME type of the JSON output.
+// The recommended value is "application/json" (RFC 4627), but "text/plain" is
+// also a common value for debugging porpoises.
+$content_type = "application/json";
+
