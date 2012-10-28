@@ -35,6 +35,17 @@
 // The database collection for the ticketing system
 $mongo_store = "dibs";
 
+
+// The hostname where the dibs API is located
+$api_host = "dibs.example.org";
+// The location of the dibs API, relative to your site root
+$api_root = "/dibs/";
+// Indicates whether or not dibs communicates over HTTPS. Though the default is
+// to not use HTTPS, it is strongly recommended that you do!
+$api_use_https = false;
+
+
+
 // The hashing algorithm used for storing passwords
 $hash_algo = "sha256";
 // The number of times to run this algorithm
@@ -52,4 +63,6 @@ $hash_count = 50000;
 // The recommended value is "application/json" (RFC 4627), but "text/plain" is
 // also a common value for debugging porpoises.
 $content_type = "application/json";
+
+
 

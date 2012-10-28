@@ -20,26 +20,50 @@
 */
 
 /*
-	API Manager for v1 calls.
+	Methods for viewing / updating a shopping cart.
 */
 
-function handle_request( $uri, &$output )
+
+class Cart
 {
-	$verb = $_SERVER["REQUEST_METHOD"];
-	
-	/**
-	 * Targets GET .../1/cart/...
-	 * 
-	 * Provide methods for viewing or updating shopping carts.
+	/** 
+	 * Create a new cart in the database, and return its ID
 	 **/
-	if ( substr($uri,0,5) == "cart/" )
+	static function create()
 	{
-		require_once( "v1/cart.php" );
-		return handle_cart_request( $uri, $output );
+		return null;
+	}
+
+
+	/** 
+	 * Check if the cart exists in the database
+	 **/
+	static function exists( $cart_id )
+	{
+		return false;
+	}
+
+
+	/**
+	 * Return the cart object for the cart specified
+	 **/
+	static function get( $cart_id )
+	{
+		return null;
 	}
 	
-	print( "Most handlers are currently in development, " .
-		"others aren't yet conceived, written, or performed." );
-	return 2;
+	
+	/**
+	 * Check if the cart is still open
+	 **/
+	static function is_open( $cart_id )
+	{
+		return false;
+	}
+	
+	
+	static function add_item( $cart_id, $EAN, $count )
+	{
+		
+	}
 }
-

@@ -30,19 +30,54 @@ require_once( "lib/settings.defaults.php" );
 
 require_once( "lib/mongo.inc" );
 
-print( "Dit is een gecontrolationeerde omgeving." );
+
+// Find out the API version from the request URI
+$uri = substr( $_SERVER["REQUEST_URI"], strlen($api_root) );
+
+if ( substr($uri,0,2) == "1/" )
+{
+	// This is an API version 1 call; proceed accordingly.
+	
+	$output = null;
+	
+	require_once( "v1/manager.php" );
+	
+	$status = handle_request( substr($uri,2), $output );
+	output_json( $status, $output );
+}
 
 
 
-output_json( 0, array("Yep"=>"Hij dóet het.") );
+
+
+// Could not find a matching address. Exit with an error.
+
+output_json( 1, array(
+	"error" => "Unknown API call.",
+	"additional information" => array(
+		"URI" => $_SERVER["REQUEST_URI"],
+		"API root" => $api_root,
+		"translated URI" => $uri,
+	),
+));
+
+
+
 
 
 /**
- * Basically, encode $output as JSON, and print it to screen.
+ * Basically, encode $output as JSON, print it to screen, and exit.
  */
 function output_json( $status, $output = null )
 {
 	global $content_type;
+	
+	// Great. Five minutes in development, and already my strange adherence to
+	// unixey conventions is making this a candidate for a feature on
+	// thedailywtf.com
+	if ( $status === true ) $status = 0;
+	if ( $status === false ) $status = 1;
+	if ( $status === null ) $status = 1;
 	
 	$status = (int)$status;
 	$shell = ob_get_clean();

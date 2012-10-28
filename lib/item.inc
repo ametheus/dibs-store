@@ -20,26 +20,18 @@
 */
 
 /*
-	API Manager for v1 calls.
+	Methods for manipulating store items
 */
 
-function handle_request( $uri, &$output )
+
+class Item
 {
-	$verb = $_SERVER["REQUEST_METHOD"];
-	
 	/**
-	 * Targets GET .../1/cart/...
-	 * 
-	 * Provide methods for viewing or updating shopping carts.
+	 * Check if the item exists in the database.
 	 **/
-	if ( substr($uri,0,5) == "cart/" )
+	static function exists( $EAN )
 	{
-		require_once( "v1/cart.php" );
-		return handle_cart_request( $uri, $output );
+		return false;
 	}
-	
-	print( "Most handlers are currently in development, " .
-		"others aren't yet conceived, written, or performed." );
-	return 2;
 }
 
