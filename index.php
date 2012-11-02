@@ -94,6 +94,11 @@ function output_json( $status, $output = null )
 	
 	header( "Content-type: {$content_type}; charset=UTF-8" );
 	
+	
+	// Remove any MongoDB object id's
+	sanitize_mongo_objects( $rv );
+	
+	
 	if ( version_compare( PHP_VERSION, '5.4.0' ) >= 0 )
 	{
 		// PHP 5.4 correctly handles unicode strings in JSON by itself.
@@ -107,6 +112,23 @@ function output_json( $status, $output = null )
 	print( "\n" );
 	
 	exit( $status );
+}
+
+
+/** 
+ * Remove the MongoDB-specific "_id" attribute in this array
+ **/
+function sanitize_mongo_objects( &$arr )
+{
+	$keys = array_keys( $arr );
+	
+	foreach ( $keys as $k )
+	{
+		if ( $k == "_id" && is_object($arr[$k]) )
+			unset( $arr[$k] );
+		elseif ( is_array($arr[$k]) )
+			sanitize_mongo_objects( $arr[$k] );
+	}
 }
 
 
