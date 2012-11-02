@@ -90,7 +90,10 @@ class Cart
 	 **/
 	static function get( $cart_id )
 	{
-		return null;
+		global $db;
+		return $db->carts->findOne( array(
+			"cart-id" => $cart_id
+		) );
 	}
 	
 	
