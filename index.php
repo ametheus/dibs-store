@@ -89,6 +89,18 @@ function output_json( $status, $output = null )
 	if ( $output !== null )
 		$rv["output"] = $output;
 	
+	if ( $status != 0 )
+	{
+		require_once( "lib/help.inc" );
+		$error = Help::error_info( $status );
+		$error = $error["short"];
+		
+		$rv["error"] = $error;
+		
+		$http = Help::http_status( $status );
+		header( "HTTP/1.1 {$http} {$error}" );
+	}
+	
 	if ( strlen($shell) > 0 )
 		$rv["shell-messages"] = $shell;
 	

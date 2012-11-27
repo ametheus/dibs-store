@@ -37,12 +37,12 @@ function handle_item_request( $uri, &$output )
 	 *
 	 * Get a single item description
 	 **/
-	if ( $verb == "GET" && preg_match( '#product/(\d{13})/?#', $uri, $A ) )
+	if ( $verb == "GET" && preg_match( '#product/(\d+)/?#', $uri, $A ) )
 	{
 		$EAN = $A[1];
 		$output = Item::get($EAN);
 		
-		return $output == null ? 6 : 0;
+		return $output == null ? 4 : 0;
 	}
 	
 	
