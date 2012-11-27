@@ -67,7 +67,7 @@ class Help
 			);
 			case ( 5 ): return array(
 				"short" => "Cart has been marked closed.",
-				"long" => "You have eiter completed purchase, or the cart has " .
+				"long" => "You have either completed purchase, or the cart has " .
 					"been marked as expired. Eitherway, it is no longer possible " .
 					"to add or remove products.",
 				"versions" => array(1),

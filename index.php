@@ -45,6 +45,15 @@ if ( substr($uri,0,2) == "1/" )
 	$status = handle_request( substr($uri,2), $output );
 	output_json( $status, $output );
 }
+elseif ( preg_match( '#^h[ea]lp/(\d+)/?$#', $uri, $A ) )
+{
+	// Display help for this error
+	
+	require_once( "lib/help.inc" );
+	$halp = Help::error_info( (int)$A[1] );
+	
+	output_json( $halp == null ? 1 : 0, $halp );
+}
 
 
 
@@ -89,17 +98,30 @@ function output_json( $status, $output = null )
 	if ( $output !== null )
 		$rv["output"] = $output;
 	
+	
+	// Add a short error message to the output
 	if ( $status != 0 )
 	{
 		require_once( "lib/help.inc" );
 		$error = Help::error_info( $status );
-		$error = $error["short"];
-		
-		$rv["error"] = $error;
-		
-		$http = Help::http_status( $status );
+		if ( $error )
+		{
+			$error = $error["short"];
+			global $api_host, $api_root, $api_use_https;
+			
+			$rv["error"] = $error;
+			$rv["see-also"] = ( $api_use_https ? "https://" : "http://" ) . 
+				$api_host . $api_root . "help/{$status}";
+			
+			$http = Help::http_status( $status );
+		}
+		else
+		{
+			$error = "I am a teapot";
+		}
 		header( "HTTP/1.1 {$http} {$error}" );
 	}
+	
 	
 	if ( strlen($shell) > 0 )
 		$rv["shell-messages"] = $shell;
