@@ -38,6 +38,17 @@ function handle_request( $uri, &$output )
 		return handle_cart_request( $uri, $output );
 	}
 	
+	/**
+	 * Targets GET .../1/product/...
+	 * 
+	 * Provide methods for obtaining product information
+	 **/
+	if ( substr($uri,0,8) == "product/" )
+	{
+		require_once( "v1/product.php" );
+		return handle_item_request( $uri, $output );
+	}
+	
 	print( "Most handlers are currently in development, " .
 		"others aren't yet conceived, written, or performed." );
 	return 2;

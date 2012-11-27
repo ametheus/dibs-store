@@ -20,35 +20,35 @@
 */
 
 /*
-	Methods for manipulating store items
+	Handles .../1/product/... calls.
 */
 
+require_once( "lib/item.inc" );
 
-class Item
+
+
+function handle_item_request( $uri, &$output )
 {
-	/**
-	 * Check if the item exists in the database.
-	 **/
-	static function exists( $EAN )
-	{
-		$db = db();
-		$it = $db->items->find(array( "EAN" => $EAN ));
-		return ( $it->count() >= 1 );
-	}
+	$verb = $_SERVER["REQUEST_METHOD"];
 	
 	
 	/**
-	 * Get one item description.
+	 * GET .../1/product/{EAN}
+	 *
+	 * Get a single item description
 	 **/
-	static function get( $EAN, $short = 0 )
+	if ( $verb == "GET" && preg_match( '#product/(\d{13})/?#', $uri, $A ) )
 	{
-		$db = db();
-		$rv = $db->items->findOne(array( "EAN" => $EAN ));
+		$EAN = $A[1];
+		$output = Item::get($EAN);
 		
-		// TODO: shorten item object if necessary
-		// TODO: convert currencies
-		
-		return $rv;
+		return $output == null ? 6 : 0;
 	}
+	
+	
+	
+	print( "This is not a product command I recognize." );
+	return 2;
 }
+
 
