@@ -102,7 +102,7 @@ function output_json( $status, $output = null )
 	if ( version_compare( PHP_VERSION, '5.4.0' ) >= 0 )
 	{
 		// PHP 5.4 correctly handles unicode strings in JSON by itself.
-		print( json_encode( $rv, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT ) );
+		print( json_encode( $rv, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ) );
 	}
 	else
 	{
@@ -134,15 +134,11 @@ function sanitize_mongo_objects( &$arr )
 
 function json_utf8_encode( $x, $numbers_as_strings = false, $indent = 0, $indent_with="  " )
 {
-	if ( $numbers_as_strings )
-		if ( is_numeric($x) )
-			return $x;
-	
-	if ( is_string($x) )
+	if ( is_string($x) || ( is_numeric($x) && $numbers_as_strings == true ) )
 	{
 		$x = str_replace(
-			array( "\\",   "\"", "\n", "\t", "\0"),
-			array("\\\\","\\\"","\\n","\\t","\\0"),
+			array( "\\",   "\"", "\r", "\n", "\t", "\0"),
+			array("\\\\","\\\"","\\r","\\n","\\t","\\0"),
 			$x
 		);
 		return "\"{$x}\"";
@@ -178,12 +174,12 @@ function json_utf8_encode( $x, $numbers_as_strings = false, $indent = 0, $indent
 	// Else: non-numeric array.
 	$rv = "";
 	foreach ( $x as $k => $v )
-		$rv .= ",{$I1}" . json_utf8_encode($k) . 
+		$rv .= ",{$I1}" . json_utf8_encode( $k, true ) . 
 			": " . json_utf8_encode( $v, $numbers_as_strings, $indent + 1, $indent_with );
 			
 	if ( strlen($rv) )
 		$rv = $I1 . substr( $rv, 1 + strlen($I1) ) . $I;
-	return "{{$rv}}";
+	return ( $indent == 0 ? "" : $I ) . "{{$rv}}";
 }
 function is_numeric_array( $a )
 {
