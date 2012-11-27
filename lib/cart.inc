@@ -37,7 +37,7 @@ class Cart
 	 **/
 	static function create( $tries = 10 )
 	{
-		global $db;
+		$db = db();
 		
 		if ( $tries < 1 ) return null;
 		
@@ -77,7 +77,7 @@ class Cart
 	 **/
 	static function exists( $cart_id )
 	{
-		global $db;
+		$db = db();
 		
 		return $db->carts->find( array(
 			"cart-id" => $cart_id
@@ -90,7 +90,7 @@ class Cart
 	 **/
 	static function get( $cart_id )
 	{
-		global $db;
+		$db = db();
 		return $db->carts->findOne( array(
 			"cart-id" => $cart_id
 		) );

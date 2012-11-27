@@ -27,14 +27,26 @@ require_once( "lib/settings.defaults.php" );
 @include_once( "settings.php" );
 
 
-$mon = false;
-
-if ( isset($mongo_server) )
-	$mon = new Mongo($mongo_server);
-else
-	$mon = new Mongo();
-
-
-$db = $mon->{$mongo_store};
+function db()
+{
+	static $db = null;
+	
+	if ( $db == null )
+	{
+		$mon = false;
+		
+		global $mongo_server, $mongo_store;
+		
+		if ( isset($mongo_server) )
+			$mon = new Mongo($mongo_server);
+		else
+			$mon = new Mongo();
+		
+		
+		$db = $mon->{$mongo_store};
+	}
+	
+	return $db;
+}
 
 
