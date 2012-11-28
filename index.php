@@ -25,6 +25,8 @@
 
 ob_start();
 
+register_shutdown_function("shutdown");
+
 require_once( "lib/settings.defaults.php" );
 @include_once( "settings.php" );
 
@@ -226,4 +228,15 @@ function is_numeric_array( $a )
 			return false;
 	return true;
 }
+
+
+function shutdown()
+{
+	$er = error_get_last();
+	if ( $er["type"] == E_ERROR )
+	{
+		output_json( 1 );
+	}
+}
+
 
