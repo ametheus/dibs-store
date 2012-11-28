@@ -102,12 +102,42 @@ class Cart
 	 **/
 	static function is_open( $cart_id )
 	{
-		return false;
+		$db = db();
+		$cart = $db->carts->findOne(
+			array( "cart-id" => $cart_id ),
+			array( "status.confirmed" => 1, "_id" => 0 )
+		);
+		
+		return @$cart["status"]["confirmed"] == 0;
 	}
 	
 	
 	static function add_item( $cart_id, $EAN, $count )
 	{
+		$db = db();
 		
+		$rv = $db->carts->update(
+			array(
+				"cart-id" => $cart_id,
+				"items.EAN" => $EAN
+			),
+			array( '$inc' => array('items.$.count' => $count ) )
+		);
+		
+		if ( $rv == 0 ) return false;
+		
+		// Check if 'affected rows' > 0
+		$le = $db->lastError();
+		print_r($le);
+		if ( $le["n"] > 0 ) return true;
+		
+		$rv = $db->carts->update(
+			array( "cart-id" => $cart_id ),
+			array( '$push' => array("items" => array(
+				"EAN" => $EAN,
+				"count" => $count ) ) )
+		);
+		
+		return $rv > 0;
 	}
 }
