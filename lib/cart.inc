@@ -112,10 +112,14 @@ class Cart
 	}
 	
 	
+	/**
+	 * Add {count} items of type {EAN} to the cart.
+	 **/
 	static function add_item( $cart_id, $EAN, $count )
 	{
 		$db = db();
 		
+		// If this particular item was already in the cart, add the two totals.
 		$rv = $db->carts->update(
 			array(
 				"cart-id" => $cart_id,
