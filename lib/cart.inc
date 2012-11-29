@@ -20,16 +20,49 @@
 */
 
 /*
-	Methods for viewing / updating a shopping cart.
+	Methods for viewing or updating a shopping cart.
 */
 
 
 class Cart
 {
+	/**
+	 * Add {count} items of type {EAN} to the cart.
+	 **/
+	static function add_item( $cart_id, $EAN, $count )
+	{
+		$db = db();
+		
+		// If this particular item was already in the cart, add the two totals.
+		$rv = $db->carts->update(
+			array(
+				"cart-id" => $cart_id,
+				"items.EAN" => $EAN
+			),
+			array( '$inc' => array('items.$.count' => $count ) )
+		);
+		
+		if ( $rv == 0 ) return false;
+		
+		// Check if 'affected rows' > 0
+		$le = $db->lastError();
+		if ( $le["n"] > 0 ) return true;
+		
+		$rv = $db->carts->update(
+			array( "cart-id" => $cart_id ),
+			array( '$push' => array("items" => array(
+				"EAN" => $EAN,
+				"count" => $count ) ) )
+		);
+		
+		return $rv > 0;
+	}
+	
+	
 	/** 
 	 * Create a new cart in the database, and return its ID.
 	 * 
-	 * A cart ID is a string satisfying the regex
+	 * A cart ID is - in this implementation - a string satisfying the regex
 	 *    /([0-9a-zA-Z]{5}-){2,8}[0-9a-zA-Z]{1,5}/
 	 * and has nice cryptographic properties
 	 * 
@@ -145,39 +178,6 @@ class Cart
 		$EAN = $cart["items"][$i]["EAN"];
 		
 		return !preg_match('/^[-0-9]+$/',$EAN);
-	}
-	
-	
-	/**
-	 * Add {count} items of type {EAN} to the cart.
-	 **/
-	static function add_item( $cart_id, $EAN, $count )
-	{
-		$db = db();
-		
-		// If this particular item was already in the cart, add the two totals.
-		$rv = $db->carts->update(
-			array(
-				"cart-id" => $cart_id,
-				"items.EAN" => $EAN
-			),
-			array( '$inc' => array('items.$.count' => $count ) )
-		);
-		
-		if ( $rv == 0 ) return false;
-		
-		// Check if 'affected rows' > 0
-		$le = $db->lastError();
-		if ( $le["n"] > 0 ) return true;
-		
-		$rv = $db->carts->update(
-			array( "cart-id" => $cart_id ),
-			array( '$push' => array("items" => array(
-				"EAN" => $EAN,
-				"count" => $count ) ) )
-		);
-		
-		return $rv > 0;
 	}
 	
 	
