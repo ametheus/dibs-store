@@ -112,6 +112,42 @@ class Cart
 	}
 	
 	
+	/** 
+	 * Check if specified cart has an {i}th order line
+	 **/
+	static function line_exists( $cart_id, $i )
+	{
+		if ( $i < 0 ) return false;
+		
+		// HACK: Find a way to do this directly in MongoDB.
+		$cart = db()->carts->findOne(
+			array( "cart-id" => $cart_id ),
+			array( "items" => 1 )
+		);
+		return $i < count( $cart["items"] );
+	}
+	
+	
+	/**
+	 * Check if the specified order line is special or not
+	 **/
+	static function line_is_special( $cart_id, $i )
+	{
+		if ( $i < 0 ) return false;
+		
+		// In this implementation, an order line is 'special' if its EAN is
+		// non-numeric.
+		
+		$cart = db()->carts->findOne(
+			array( "cart-id" => $cart_id ),
+			array( "items.EAN" => 1 )
+		);
+		$EAN = $cart["items"][$i]["EAN"];
+		
+		return !preg_match('/^[-0-9]+$/',$EAN);
+	}
+	
+	
 	/**
 	 * Add {count} items of type {EAN} to the cart.
 	 **/
@@ -132,7 +168,6 @@ class Cart
 		
 		// Check if 'affected rows' > 0
 		$le = $db->lastError();
-		print_r($le);
 		if ( $le["n"] > 0 ) return true;
 		
 		$rv = $db->carts->update(
@@ -143,5 +178,23 @@ class Cart
 		);
 		
 		return $rv > 0;
+	}
+	
+	
+	/**
+	 * Update the order line to read exactly {count} items.
+	 **/
+	static function set_count( $cart_id, $i, $count )
+	{
+		if ( $i < 0 ) return false;
+		
+		db()->carts->update(
+			array( "cart-id" => $cart_id ),
+			array( '$set' => array( "items.{$i}.count" => $count ) )
+		);
+		
+		// Check if 'affected rows' > 0
+		$le = db()->lastError();
+		return ( $le["n"] > 0 );
 	}
 }

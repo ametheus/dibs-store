@@ -80,8 +80,39 @@ function handle_cart_request( $uri, &$output )
 		if ( !Cart::exists( $cart_id ) ) return 3;
 		if ( !Item::exists( $EAN ) ) return 4;
 		if ( !Cart::is_open( $cart_id ) ) return 5;
+		if ( $count <= 0 ) return 6;
 		
 		$rv = Cart::add_item( $cart_id, $EAN, $count );
+		if ( $rv )
+		{
+			$output = Cart::get( $cart_id );
+			return 0;
+		}
+		return 1;
+	}
+	
+	
+	
+	/** 
+	 * POST .../1/cart/{cart-id}/{orderline}   {count}
+	 * 
+	 * Update {orderline} to have {count} items. (Orderline is zero-indexed!)
+	 **/
+	if ( $verb == "POST"
+		&& preg_match( '#^cart/([-0-9a-zA-z]+)/(\d+)/?$#', $uri, $A )
+		&& isset($_POST["count"]) )
+	{
+		$cart_id = $A[1];
+		$line_no = (int)$A[2];
+		$count   = (int)$_POST["count"];
+		
+		if ( !Cart::exists( $cart_id ) ) return 3;
+		if ( !Cart::is_open( $cart_id ) ) return 5;
+		if ( $count < 0 ) return 6;
+		if ( !Cart::line_exists( $cart_id, $line_no ) ) return 7;
+		if ( Cart::line_is_special( $cart_id, $line_no ) ) return 8;
+		
+		$rv = Cart::set_count( $cart_id, $line_no, $count );
 		if ( $rv )
 		{
 			$output = Cart::get( $cart_id );
