@@ -46,7 +46,9 @@ class Help
 				"long" => "An error occurred that wasn't assigned an " .
 					"error number during development of this API.\n" .
 					"If you see this error, it is likely that more " .
-					"things have gone wrong than is directly visible.",
+					"things have gone wrong than is directly visible.\n" .
+					"If you repeatedly and predictibly see this error, please " .
+					"contact the developers of this application.",
 				"versions" => array(1),
 			);
 			case ( 2 ): return array(
@@ -72,6 +74,22 @@ class Help
 					"to add or remove products.",
 				"versions" => array(1),
 			);
+			case ( 6 ): return array(
+				"short" => "Count cannot be less than zero",
+				"long" => "You've tried to purchase less than zero items, which should not be possible.",
+				"versions" => array(1),
+			);
+			case ( 7 ): return array(
+				"short" => "This order line does not exist",
+				"long" => "You've entered an order line number that doesn't exist in this cart.",
+				"versions" => array(1),
+			);
+			case ( 8 ): return array(
+				"short" => "This orderline is special",
+				"long" => "This order line was added to your cart through a special process, " .
+					"and cannot be modified manually.",
+				"versions" => array(1),
+			);
 		}
 		return false;
 	}
@@ -87,8 +105,12 @@ class Help
 			case ( 1 ): return 500;
 			case ( 2 ): return 400;
 			case ( 3 ): return 404;
+			case ( 5 ): return 403;
 			case ( 4 ): return 404;
 			case ( 5 ): return 403;
+			case ( 6 ): return 403;
+			case ( 7 ): return 404;
+			case ( 8 ): return 403;
 		}
 		
 		// If any other error occurs, I must be a teapot:
