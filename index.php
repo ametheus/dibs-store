@@ -35,6 +35,7 @@ require_once( "lib/mongo.inc" );
 
 // Find out the API version from the request URI
 $uri = substr( $_SERVER["REQUEST_URI"], strlen($api_root) );
+list($uri) = explode( "?", $uri );
 
 if ( substr($uri,0,2) == "1/" )
 {
@@ -66,7 +67,8 @@ elseif ( preg_match( '#^h[ea]lp/(\d+)/?$#', $uri, $A ) )
 output_json( 1, array(
 	"error" => "Unknown API call.",
 	"additional information" => array(
-		"URI" => $_SERVER["REQUEST_URI"],
+		"URI" => $uri,
+		"query string" => $_GET,
 		"API root" => $api_root,
 		"translated URI" => $uri,
 	),
