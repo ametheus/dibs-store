@@ -148,15 +148,20 @@ var CallDibs = (function()
 		// Show the store with some items
 		var load_store = function()
 		{
+			G.dibs_root.addClass("dibs-storefront");
+			
 			api("1/category/all", function(data)
 			{
 				if ( !data.items.length ) return;
+				
+				var cnt = $('<div class="dibs-item-container" />');
+				G.dibs_root.append( cnt );
 				
 				for ( var i = 0; i < data.items.length; i++ )
 				{
 					var it = $("<div/>");
 					G.fmt_item_long( it, data.items[i] );
-					G.dibs_root.append( it );
+					cnt.append( it );
 				}
 			});
 		};
