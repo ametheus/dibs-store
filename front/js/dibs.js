@@ -31,9 +31,21 @@ var CallDibs = (function()
 	
 	var call_wrapper = function( callback )
 	{
-		// TODO: handle failures
-		return callback;
+		var ign = callback.pass_error ? callback.pass_error : [];
+		
+		return function( data )
+		{
+			if ( data.status == 0 || $.inArray( data.status, ign ) >= 0 )
+			{
+				callback( data );
+				return;
+			}
+			
+			alert( "Error " + data.status + ": " + data.error + "\n\n" +
+				"See " + data.see_also + " for more information." );
+		};
 	};
+	
 	
 	var cd = function( api_url )
 	{
@@ -45,7 +57,17 @@ var CallDibs = (function()
 				url: api_url + uri,
 				cache: false,
 				dataType: "json",
-				success: call_wrapper( callback )
+				success: call_wrapper( callback ),
+				error: function( jqXHR, textStatus, errorThrown )
+				{
+					if ( textStatus == "error" )
+					{
+						// HTTP error; the dibs api throws these sometimes.
+						call_wrapper( callback )( $.parseJSON( jqXHR.responseText ) );
+						return;
+					}
+					console.log([ jqXHR, textStatus, errorThrown ])
+				}
 			};
 			
 			$.ajax(ajax);

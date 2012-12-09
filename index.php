@@ -114,7 +114,7 @@ function output_json( $status, $output = null )
 			global $api_host, $api_root, $api_use_https;
 			
 			$rv["error"] = $error;
-			$rv["see-also"] = ( $api_use_https ? "https://" : "http://" ) . 
+			$rv["see_also"] = ( $api_use_https ? "https://" : "http://" ) . 
 				$api_host . $api_root . "help/{$status}";
 			
 			$http = Help::http_status( $status );

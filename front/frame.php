@@ -58,7 +58,7 @@ function uri( $link )
 			
 			console.log( CallDibs.api );
 			
-			CallDibs.___TODO__remove__call_api_directly( "1/category/all", function(d){ console.log(d); } );
+			CallDibs.___TODO__remove__call_api_directly( "c1/category/all", function(d){ console.log(d); } );
 		</script>
 	</head>
 	<body>
