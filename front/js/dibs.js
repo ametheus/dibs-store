@@ -36,8 +36,9 @@ var CallDibs = (function()
 		
 		$(target).addClass("dibs-product").addClass("dibs-product-short").attr("data-ean",ean);
 		$(target).append($("<h3/>").html(item.title));
-		$(target).append($("<div/>").addClass("dibs-order").append(G.fmt_order_button(ean)));
-		$(target).append($("<p/>").addClass("dibs-description").html(item.title));
+		$(target).append($("<div/>").addClass("dibs-order").html(G.fmt_order_button(ean)));
+		$(target).append($("<p/>").addClass("dibs-description").html(item.description));
+		$(target).append($("<div/>").addClass("dibs-price").html(G.fmt_price(item.price)));
 	};
 	
 	G.fmt_order_button = function( ean )
@@ -54,7 +55,7 @@ var CallDibs = (function()
 		}
 		
 		if ( count == 0 )
-			return '<button class="dibs-order-button">Bestellen</button>';
+			return '<button class="dibs-order-button"><span>Bestellen</span></button>';
 		
 		return '<label>Aantal: ' +
 				'<input type="text" class="dibs-count" value="' + count + '" />' +
@@ -62,6 +63,36 @@ var CallDibs = (function()
 			'<button class="dibs-plus"><span>Meer</span></button>' +
 			'<button class="dibs-minus"><span>Minder</span></button>' +
 			'<button class="dibs-cancel"><span>Verwijderen</span></button>';
+	};
+	
+	G.fmt_price = function( price )
+	{
+		if ( price.original_price )
+		{
+			var simplified = {
+				currency: price.currency,
+				amount: price.amount
+			};
+			
+			return '<del class="dibs-original-price">' + 
+				G.fmt_price( price.original_price ) + "</del>" +
+				'<span class="dibs-current-price">' +
+				G.fmt_price( simplified ) + "</del>";
+		}
+		
+		var friendly_currencies = {
+			"EUR": "&#x20AC;",
+			"BTC": "&#x0243;"
+		};
+		
+		var cur = price.currency;
+		if ( cur in friendly_currencies ) cur = friendly_currencies[cur];
+		
+		// TODO: nice formatting
+		var amt = price.amount;
+		
+		return '<span class="dibs-currency">' + cur + '</span>' +
+			'<span class="dibs-amount">' + amt + '</span>';
 	};
 	
 	
