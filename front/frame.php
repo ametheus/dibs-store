@@ -52,13 +52,10 @@ function uri( $link )
 		<script src="<?=uri('front/js/jquery.js')?>"></script>
 		<script src="<?=uri('front/js/dibs.js')?>"></script>
 		<script>
-			console.log( CallDibs.api );
-			
-			CallDibs("<?=uri('')?>");
-			
-			console.log( CallDibs.api );
-			
-			CallDibs.___TODO__remove__call_api_directly( "c1/category/all", function(d){ console.log(d); } );
+			$(function()
+			{
+				CallDibs("<?=uri('')?>");
+			});
 		</script>
 	</head>
 	<body>

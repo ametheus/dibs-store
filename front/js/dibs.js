@@ -29,6 +29,42 @@ var CallDibs = (function()
 		api: function() { console.warn( "API has not yet been initialized!" ); }
 	};
 	
+	
+	G.fmt_item_long = function( target, item )
+	{
+		var ean = item.EAN;
+		
+		$(target).addClass("dibs-product").addClass("dibs-product-short").attr("data-ean",ean);
+		$(target).append($("<h3/>").html(item.title));
+		$(target).append($("<div/>").addClass("dibs-order").append(G.fmt_order_button(ean)));
+		$(target).append($("<p/>").addClass("dibs-description").html(item.title));
+	};
+	
+	G.fmt_order_button = function( ean )
+	{
+		var count = 0;
+		if ( G.active_cart )
+		{
+			for ( var i = 0; i < G.active_cart.items.length; i++ )
+			{
+				var it = G.active_cart.items[i];
+				if ( it.EAN == ean )
+					count += it.count;
+			}
+		}
+		
+		if ( count == 0 )
+			return '<button class="dibs-order-button">Bestellen</button>';
+		
+		return '<label>Aantal: ' +
+				'<input type="text" class="dibs-count" value="' + count + '" />' +
+			'</label>' +
+			'<button class="dibs-plus"><span>Meer</span></button>' +
+			'<button class="dibs-minus"><span>Minder</span></button>' +
+			'<button class="dibs-cancel"><span>Verwijderen</span></button>';
+	};
+	
+	
 	var call_wrapper = function( callback )
 	{
 		var ign = callback.pass_error ? callback.pass_error : [];
@@ -37,7 +73,7 @@ var CallDibs = (function()
 		{
 			if ( data.status == 0 || $.inArray( data.status, ign ) >= 0 )
 			{
-				callback( data );
+				callback( data.output, data.status );
 				return;
 			}
 			
@@ -73,7 +109,23 @@ var CallDibs = (function()
 			$.ajax(ajax);
 		};
 		G.api = api;
+		
+		// HACK
+		G.dibs_root = $("body");
+		
+		api("1/category/all", function(data)
+		{
+			if ( !data.items.length ) return;
+			
+			for ( var i = 0; i < data.items.length; i++ )
+			{
+				var it = $("<div/>");
+				G.fmt_item_long( it, data.items[i] );
+				G.dibs_root.append( it );
+			}
+		});
 	};
+	
 	
 	cd.___TODO__remove__call_api_directly = function(a,b,c,d) { G.api(a,b,c,d); };
 	
