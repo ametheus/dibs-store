@@ -144,17 +144,41 @@ var CallDibs = (function()
 		// HACK
 		G.dibs_root = $("body");
 		
-		api("1/category/all", function(data)
+		
+		// Show the store with some items
+		var load_store = function()
 		{
-			if ( !data.items.length ) return;
-			
-			for ( var i = 0; i < data.items.length; i++ )
+			api("1/category/all", function(data)
 			{
-				var it = $("<div/>");
-				G.fmt_item_long( it, data.items[i] );
-				G.dibs_root.append( it );
-			}
-		});
+				if ( !data.items.length ) return;
+				
+				for ( var i = 0; i < data.items.length; i++ )
+				{
+					var it = $("<div/>");
+					G.fmt_item_long( it, data.items[i] );
+					G.dibs_root.append( it );
+				}
+			});
+		};
+		
+		
+		// Load the cart if an ID is present
+		if ( $.cookie('dibs-cart-id') )
+		{
+			var cb = function( data, status )
+			{
+				if ( status == 0 )
+					G.active_cart = data;
+				
+				load_store();
+			};
+			
+			cb.pass_error = [3];
+			
+			G.api("1/cart/" + $.cookie('dibs-cart-id'), cb );
+		}
+		else
+			load_store();
 	};
 	
 	

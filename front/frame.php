@@ -49,7 +49,10 @@ function uri( $link )
 		<title>Dibs store</title>
 		
 		<link rel="stylesheet" href="<?=uri('front/css/dibs.css')?>" />
+		
 		<script src="<?=uri('front/js/jquery.js')?>"></script>
+		<script src="<?=uri('front/js/jquery.cookie.js')?>"></script>
+		
 		<script src="<?=uri('front/js/dibs.js')?>"></script>
 		<script>
 			$(function()
