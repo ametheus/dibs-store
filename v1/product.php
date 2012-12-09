@@ -20,7 +20,7 @@
 */
 
 /*
-	Handles .../1/product/... calls.
+	Handles .../1/product/... calls and the odd .../1/category/...
 */
 
 require_once( "lib/item.inc" );
@@ -45,6 +45,18 @@ function handle_item_request( $uri, &$output )
 		return $output == null ? 4 : 0;
 	}
 	
+	/**
+	 * GET .../1/category/{EAN}
+	 *
+	 * Get all items from a category.
+	 **/
+	if ( $verb == "GET" && preg_match( '#category/(.+)/?#', $uri, $A ) )
+	{
+		$category_name = $A[1];
+		$output = Item::get_category( $category_name );
+		
+		return 0;
+	}
 	
 	
 	print( "This is not a product command I recognize." );

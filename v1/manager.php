@@ -39,11 +39,11 @@ function handle_request( $uri, &$output )
 	}
 	
 	/**
-	 * Targets GET .../1/product/...
+	 * Targets GET .../1/product/... or GET .../1/category/...
 	 * 
 	 * Provide methods for obtaining product information
 	 **/
-	if ( substr($uri,0,8) == "product/" )
+	if ( substr($uri,0,8) == "product/" || substr($uri,0,9) == "category/" )
 	{
 		require_once( "v1/product.php" );
 		return handle_item_request( $uri, $output );

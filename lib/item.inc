@@ -50,5 +50,44 @@ class Item
 		
 		return $rv;
 	}
+	
+	
+	/**
+	 * Get all items in category {category_name}.
+	 * 
+	 * Optional: Shortness {short}, or sort by {sort}.
+	 **/
+	static function get_category( $category_name, $short = 0, $sort = array() )
+	{
+		$category_name = (string)$category_name;
+		
+		$rv = db()->categories->findOne(array("cat-id" => $category_name));
+		if ( ! $rv ) $rv = array( "name" => $category_name );
+		
+		// TODO: add sub-/supercategories.
+		
+		if ( $category_name == "all" )
+			$items = db()->items->find();
+		else
+			$items = db()->items->find(array("categories" => $category_name));
+		
+		$rv["items"] = array();
+		
+		// TODO: implement paging.
+		
+		while ( $items->hasNext() )
+		{
+			$it = $items->getNext();
+			
+			// TODO: implement sorting
+			
+			// TODO: shorten item object if necessary
+			// TODO: convert currencies
+			
+			$rv["items"][] = $it;
+		}
+		
+		return $rv;
+	}
 }
 
