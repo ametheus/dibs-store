@@ -64,18 +64,60 @@ class SisowIdeal
 		{
 			$errno = (string)$response->error->errorcode;
 			$error = (string)$response->error->errormessage;
-			error_log( "Faal: Cart [{$cart_id}], error code [{$errno}] message [{$error}]\n", 3, "/tmp/sisow-ideal.log" );
+			error_log( "init fail: Cart [{$cart_id}], error code [{$errno}] message [{$error}]\n", 3, "/tmp/sisow-ideal.log" );
 			return false;
 		}
 		
+		$trxid = (string)$response->transaction->trxid;
 		db()->carts->update(
 			array( "cart-id" => $cart_id ),
-			array( '$set' =>
-				array( "sisow-trxid" => (string)$response->transaction->trxid )
+			array( 
+				'$set' => array( "sisow-trxid" => $trxid ),
+				'$push' => array( "sisow-sessions" => $trxid ),
 			)
 		);
 		
 		return urldecode( $response->transaction->issuerurl );
+	}
+	
+	
+	static function verify_payment( $cart_id, $unique_code )
+	{
+		// TODO: unieke code.
+		if ( $unique_code !== "TODO" ) return false;
+		
+		global $sisow_merchant_id, $sisow_merchant_key;
+		$shop_id = "dibs";
+		
+		$cart = db()->carts->findOne( 
+			array( "cart-id" => $cart_id ),
+			array( "sisow-trxid" => 1 )
+		);
+		if ( !$cart ) return false;
+		$trxid = $cart["sisow-trxid"];
+		
+		$url = "https://www.sisow.nl/Sisow/iDeal/RestHandler.ashx/StatusRequest";
+		$query = array(
+			"trxid" => $trxid,
+			"shopid" => $shop_id,
+			"merchantid" => $sisow_merchant_id,
+		);
+		
+		$pt = $trxid . $shop_id . $sisow_merchant_id . $sisow_merchant_key;
+		$query["sha1"] = sha1($pt);
+		
+		$response = file_get_contents( $url . "?" . http_build_query($query) );
+		$response = simplexml_load_string($response);
+		
+		if ( $response->getName() == "errorresponse" )
+		{
+			$errno = (string)$response->error->errorcode;
+			$error = (string)$response->error->errormessage;
+			error_log( "verify fail: Cart [{$cart_id}], error code [{$errno}] message [{$error}]\n", 3, "/tmp/sisow-ideal.log" );
+			return false;
+		}
+		
+		return strtolower( $response->transaction->status );
 	}
 }
 
