@@ -29,13 +29,14 @@ class SisowIdeal
 	static function initiate_payment( $cart_id, $bank_id, $invoice_no )
 	{
 		global $sisow_merchant_id, $sisow_merchant_key;
+		global $store_name;
 		global $api_use_https, $api_host, $api_root;
 		
 		$shop_id = "dibs"; // To be implemented by Sisow
 		$amount = 1000; //TODO
 		$unique_code = "TODO"; // TODO
 		
-		$api_base = ( $api_use_https ? "https" : "http" ) . $api_host . $api_root;
+		$api_base = ( $api_use_https ? "https" : "http" ) . "://" . $api_host . $api_root;
 		
 		$url = "https://www.sisow.nl/Sisow/iDeal/RestHandler.ashx/TransactionRequest";
 		$query = array(
@@ -45,7 +46,7 @@ class SisowIdeal
 			"purchaseid"    => $invoice_no,
 			"amount"        => $amount,
 			"entrancecode"  => $unique_code,
-			"description"   => "Ticketshop Collegium Musicum",
+			"description"   => $store_name,
 			"issuerid"      => $bank_id,
 			"returnurl"     => $api_base . "1/ideal/ok/{$cart_id}",
 			"cancelurl"     => $api_base . "1/ideal/cancel/{$cart_id}",

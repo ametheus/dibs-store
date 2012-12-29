@@ -28,6 +28,10 @@
 
 
 
+// The store name
+$store_name = "Unnamed dibs store";
+
+
 // The server (address and/or port) for mongodb, if not equal to localhost
 # $mongo_server = "mongo.example.org";
 
