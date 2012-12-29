@@ -66,3 +66,7 @@ $content_type = "application/json";
 
 
 
+// Merchant ID/key for Sisow iDeal.
+$sisow_merchant_id = null;
+$sisow_merchant_key = null;
+
