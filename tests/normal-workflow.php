@@ -58,16 +58,30 @@ $o = dibs::req( "1/cart/{$cart_id}/0", array(), array( "count" => 5 ) );
 print(  "done. Total [{$o["items"][0]["count"]}]\n\n" );
 
 
-print( "That's it; all done.\n" );
-$o = dibs::req( "1/confirm/{$cart_id}", array(),
-	array(
+print( "That's it; all done... " );
+$addr = array(
+		"email" => "bogus e-mail address",
+		
 		"del-name" => "Testpersoon",
-		"del-street" => "t.a.v. Mark Rutte",
-		"del-street1" => "Adriaan Goekooplaan 10",
+		"del-street1" => "t.a.v. Mark Rutte",
+		"del-street2" => "Adriaan Goekooplaan 10",
 		"del-postcode" => "2517 JX",
 		"del-city" => "Den Haag",
 		"del-country" => "Neder;and",
-	) );
+	);
+try
+{
+	$o = dibs::req( "1/confirm/{$cart_id}", array(), $addr );
+}
+catch ( Exception $e )
+{
+	print( "whoops, let's try that again... " );
+}
+
+$addr["email"] = "premier@geheimeinformatie.nl";
+$o = dibs::req( "1/confirm/{$cart_id}", array(), $addr );
+
+print( "order submitted.\n" );
 print_r($o);
 
 
