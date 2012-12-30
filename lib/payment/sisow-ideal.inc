@@ -33,7 +33,7 @@ class SisowIdeal
 		global $api_use_https, $api_host, $api_root;
 		
 		$shop_id = "dibs"; // To be implemented by Sisow
-		$amount = 1000; //TODO
+		$amount = round( 100 * Cart::total_amount( $cart_id, "EUR" ) );
 		$unique_code = "TODO"; // TODO
 		
 		$api_base = ( $api_use_https ? "https" : "http" ) . "://" . $api_host . $api_root;
@@ -58,7 +58,8 @@ class SisowIdeal
 		$query["sha1"] = sha1($pt);
 		
 		$response = file_get_contents( $url . "?" . http_build_query($query) );
-		$response = simplexml_load_string($response);
+		$response = @simplexml_load_string($response);
+		if ( !$response ) return false;
 		
 		if ( $response->getName() == "errorresponse" )
 		{
@@ -95,6 +96,7 @@ class SisowIdeal
 		);
 		if ( !$cart ) return false;
 		$trxid = $cart["sisow-trxid"];
+		if ( !$trxid ) return false;
 		
 		$url = "https://www.sisow.nl/Sisow/iDeal/RestHandler.ashx/StatusRequest";
 		$query = array(
@@ -107,7 +109,8 @@ class SisowIdeal
 		$query["sha1"] = sha1($pt);
 		
 		$response = file_get_contents( $url . "?" . http_build_query($query) );
-		$response = simplexml_load_string($response);
+		$response = @simplexml_load_string($response);
+		if ( !$response ) return false;
 		
 		if ( $response->getName() == "errorresponse" )
 		{
@@ -117,7 +120,10 @@ class SisowIdeal
 			return false;
 		}
 		
-		return strtolower( $response->transaction->status );
+		return array(
+			strtolower( $response->transaction->status ),
+			(string)$response->transaction->issuerid,
+		);
 	}
 }
 

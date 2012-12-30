@@ -197,4 +197,39 @@ class Cart
 		$le = db()->lastError();
 		return ( $le["n"] > 0 );
 	}
+	
+	
+	/**
+	 * Get the total amount on this cart
+	 **/
+	static function total_amount( $cart_id, $currency="EUR" )
+	{
+		// TODO: convert currencies
+		
+		$cart = db()->carts->findOne(
+			array( "cart-id" => $cart_id ),
+			array( "items" => 1 )
+		);
+		
+		$due = 0;
+		foreach ( $cart["items"] as $item )
+		{
+			$count = isset($item["count"]) ? (int)$item["count"] : 1;
+			if ( isset($item["grand-total"]) )
+			{
+				$due += $item["grand-total"]["amount"];
+			}
+			elseif ( isset($item["price"]) )
+			{
+				$due += $count * $item["price"]["amount"];
+			}
+			elseif ( isset($item["EAN"]) )
+			{
+				$it = Item::get( (string)$item["EAN"] );
+				$due += $count * $it["price"]["amount"];
+			}
+		}
+		
+		return $due;
+	}
 }
