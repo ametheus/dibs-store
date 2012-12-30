@@ -32,7 +32,7 @@ function handle_request( $uri, &$output )
 	 * 
 	 * Provide methods for viewing or updating shopping carts.
 	 **/
-	if ( substr($uri,0,5) == "cart/" )
+	if ( substr($uri,0,5) == "cart/" || substr($uri,0,8) == "confirm/" )
 	{
 		require_once( "v1/cart.php" );
 		return handle_cart_request( $uri, $output );

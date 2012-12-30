@@ -122,7 +122,68 @@ function handle_cart_request( $uri, &$output )
 	}
 	
 	
+	/** 
+	 * POST .../1/confirm/{cart-id}   {e-mail} {delivery addr.}  [{billing addr.}] 
+	 * 
+	 * Confirm the order, and add given addresses to it.
+	 **/
+	if ( $verb == "POST"
+		&& preg_match( '#^confirm/([-0-9a-zA-z]+)/?$#', $uri, $A )
+		&& isset($_POST["email"])
+		&& isset($_POST["del-street1"]) && isset($_POST["del-postcode"]) )
+	{
+		$rv = true;
+		$cart_id = $A[1];
+		$email = (string)$_POST["email"];
+		
+		if ( !Cart::exists( $cart_id ) ) return 3;
+		if ( !Cart::is_open( $cart_id ) ) return 5;
+		if ( !filter_var( $email, FILTER_VALIDATE_EMAIL ) ) return 9;
+		
+		// Add addresses
+		$address = get_address( "del-" );
+		$rv = $rv && Cart::add_address( $cart_id, $address, "delivery" );
+		
+		if ( isset($_POST["bill-street1"]) && isset($_POST["bill-postcode"]) )
+			$rv = $rv && Cart::add_address( $cart_id, get_address( "bill-" ), "billing" );
+		else
+			$rv = $rv && Cart::add_address( $cart_id, $address, "billing" );
+		
+		// Set the status "confirmed"
+		$rv = $rv && Cart::add_status( $cart_id, "confirmed" );
+		
+		if ( $rv )
+		{
+			$output = Cart::get( $cart_id );
+			return 0;
+		}
+		return 1;
+	}
+	
+	
 	print( "This is not a cart operation I can relate to." );
 	return 2;
+}
+
+
+function get_address( $prefix = "" )
+{
+	$rv = array();
+	$p = $prefix;
+	
+	if ( isset($_POST["{$p}name"]) )       $rv["name"]     = (string)$_POST["{$p}name"];
+	if ( isset($_POST["{$p}company"]) )    $rv["company"]  = (string)$_POST["{$p}company"];
+	if ( isset($_POST["{$p}department"]) ) $rv["det"]      = (string)$_POST["{$p}department"];
+	if ( isset($_POST["{$p}street1"]) )    $rv["street1"]  = (string)$_POST["{$p}street1"];
+	if ( isset($_POST["{$p}street1"]) )    $rv["street1"]  = (string)$_POST["{$p}street1"];
+	if ( isset($_POST["{$p}postcode"]) )   $rv["postcode"] = (string)$_POST["{$p}postcode"];
+	if ( isset($_POST["{$p}city"]) )       $rv["city"]     = (string)$_POST["{$p}city"];
+	if ( isset($_POST["{$p}state"]) )      $rv["state"]    = (string)$_POST["{$p}state"];
+	if ( isset($_POST["{$p}country"]) )    $rv["country"]  = (string)$_POST["{$p}country"];
+	if ( isset($_POST["{$p}planet"]) )     $rv["planet"]   = (string)$_POST["{$p}planet"];
+	
+	if ( isset($_POST["{$p}phone"]) )      $rv["phone"]    = (string)$_POST["{$p}phone"];
+	
+	return $rv;
 }
 

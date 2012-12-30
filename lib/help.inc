@@ -90,6 +90,11 @@ class Help
 					"and cannot be modified manually.",
 				"versions" => array(1),
 			);
+			case ( 9 ): return array(
+				"short" => "Invalid e-mail address",
+				"long" => "The e-mail address you entered was invalid.",
+				"versions" => array(1),
+			);
 		}
 		return false;
 	}
