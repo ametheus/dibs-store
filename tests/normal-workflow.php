@@ -62,7 +62,7 @@ print( "That's it; all done... " );
 $addr = array(
 		"email" => "bogus e-mail address",
 		
-		"del-name" => "Testpersoon",
+		"del-name" => "Téßtpersoon 维基百科",
 		"del-street1" => "t.a.v. Mark Rutte",
 		"del-street2" => "Adriaan Goekooplaan 10",
 		"del-postcode" => "2517 JX",
