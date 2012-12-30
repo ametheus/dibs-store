@@ -154,7 +154,10 @@ function output_json( $status, $output = null )
 
 
 /** 
+ * Scrub an object for output.
+ * 
  * Remove the MongoDB-specific "_id" attribute in this array
+ * Convert MongoDate objects to a human-readable string.
  **/
 function sanitize_mongo_objects( &$arr )
 {
@@ -164,6 +167,8 @@ function sanitize_mongo_objects( &$arr )
 	{
 		if ( $k == "_id" && is_object($arr[$k]) )
 			unset( $arr[$k] );
+		elseif ( is_a( $arr[$k], "MongoDate" ) )
+			$arr[$k] = date('Y-m-d H:i:s.', $arr[$k]->sec ) . $arr[$k]->usec;
 		elseif ( is_array($arr[$k]) )
 			sanitize_mongo_objects( $arr[$k] );
 	}

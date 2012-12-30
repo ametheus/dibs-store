@@ -134,7 +134,7 @@ class Cart
 		// Now, create this cart in the database.
 		$db->carts->insert(array(
 			"cart-id" => $rv,
-			"created" => time(),
+			"created" => new MongoDate(),
 			"ip-addr" => $_SERVER["REMOTE_ADDR"],
 		));
 		
