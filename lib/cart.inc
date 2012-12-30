@@ -27,6 +27,22 @@
 class Cart
 {
 	/**
+	 * Add or replace an address {address} with optional {label}
+	 **/
+	static function add_address( $cart_id, $address, $label = "default" )
+	{
+		$label = str_replace( array(".","\$"), "-", $label );
+		
+		$rv = db()->carts->update(
+			array( "cart-id" => $cart_id ),
+			array( '$set' => array( "address.{$label}" => $address ) )
+		);
+		
+		return $rv > 0;
+	}
+	
+	
+	/**
 	 * Add {count} items of type {EAN} to the cart.
 	 **/
 	static function add_item( $cart_id, $EAN, $count )
@@ -53,6 +69,27 @@ class Cart
 			array( '$push' => array("items" => array(
 				"EAN" => $EAN,
 				"count" => $count ) ) )
+		);
+		
+		return $rv > 0;
+	}
+	
+	
+	/**
+	 * Add {status} to a cart
+	 **/
+	static function add_status( $cart_id, $status, $user = "system" )
+	{
+		$status = str_replace( array(".","\$"), "-", $status );
+		
+		$rv = db()->carts->update(
+			array( "cart-id" => $cart_id ),
+			array( '$push' =>
+				array( "status.{$status}" => array(
+					"date" => new MongoDate(),
+					"user" => (string)$user
+				) )
+			)
 		);
 		
 		return $rv > 0;
@@ -131,17 +168,32 @@ class Cart
 	
 	
 	/**
+	 * Check if {cart} has status {status}
+	 **/
+	static function has_status( $cart_id, $status )
+	{
+		$status = str_replace( array(".","\$"), "-", $status );
+		
+		$cart = db()->carts->findOne(
+			array( "cart-id" => $cart_id ),
+			array( "status.{$status}" => 1 )
+		);
+		if ( !$cart ) return false;
+		
+		$statuses = @$cart["status"][$status];
+		$c = count( $statuses );
+		
+		if ( $c == 0 ) return false;
+		return $statuses[ $c - 1 ];
+	}
+	
+	
+	/**
 	 * Check if the cart is still open
 	 **/
 	static function is_open( $cart_id )
 	{
-		$db = db();
-		$cart = $db->carts->findOne(
-			array( "cart-id" => $cart_id ),
-			array( "status.confirmed" => 1, "_id" => 0 )
-		);
-		
-		return @$cart["status"]["confirmed"] == 0;
+		return ! self::has_status( $cart_id, "confirmed" );
 	}
 	
 	
