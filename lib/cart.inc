@@ -252,6 +252,22 @@ class Cart
 	
 	
 	/**
+	 * Update an arbitrary field in the order
+	 **/
+	static function set( $cart_id, $set )
+	{
+		db()->carts->update(
+			array( "cart-id" => $cart_id ),
+			array( '$set' => $set )
+		);
+		
+		// Check if 'affected rows' > 0
+		$le = db()->lastError();
+		return ( $le["n"] > 0 );
+	}
+	
+	
+	/**
 	 * Get the total amount on this cart
 	 **/
 	static function total_amount( $cart_id, $currency="EUR" )

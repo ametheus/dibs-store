@@ -134,11 +134,16 @@ function handle_cart_request( $uri, &$output )
 	{
 		$rv = true;
 		$cart_id = $A[1];
-		$email = (string)$_POST["email"];
+		
+		// Cap the e-mail address at 255 chars. (CVE-2010-3710)
+		$email = substr( $_POST["email"], 0, 255 );
 		
 		if ( !Cart::exists( $cart_id ) ) return 3;
 		if ( !Cart::is_open( $cart_id ) ) return 5;
 		if ( !filter_var( $email, FILTER_VALIDATE_EMAIL ) ) return 9;
+		
+		// Add e-mail address
+		$rv = $rv && Cart::set( $cart_id, array( "email" => $email ) );
 		
 		// Add addresses
 		$address = get_address( "del-" );
