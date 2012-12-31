@@ -25,6 +25,7 @@
 
 require_once( "lib/cart.inc" );
 require_once( "lib/item.inc" );
+require_once( "lib/invoice.inc" );
 
 
 
@@ -156,6 +157,9 @@ function handle_cart_request( $uri, &$output )
 		
 		// Set the status "confirmed"
 		$rv = $rv && Cart::add_status( $cart_id, "confirmed" );
+		
+		// Assign an invoice number
+		Invoice::assign( $cart_id );
 		
 		if ( $rv )
 		{
