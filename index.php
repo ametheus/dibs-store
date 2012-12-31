@@ -107,6 +107,7 @@ function output_json( $status, $output = null )
 	if ( $status != 0 )
 	{
 		require_once( "lib/help.inc" );
+		$http = Help::http_status( $status );
 		$error = Help::error_info( $status );
 		if ( $error )
 		{
@@ -117,7 +118,6 @@ function output_json( $status, $output = null )
 			$rv["see_also"] = ( $api_use_https ? "https://" : "http://" ) . 
 				$api_host . $api_root . "help/{$status}";
 			
-			$http = Help::http_status( $status );
 		}
 		else
 		{
