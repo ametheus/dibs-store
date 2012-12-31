@@ -170,15 +170,16 @@ class Cart
 		{
 			$it = Item::get( (string)$item["EAN"] );
 			
-			$p = array( 
-				"currency" => $it["price"]["currency"],
-				"amount" => $it["price"]["amount"],
-			);
+			$p = $it["price"];
 			// TODO: Convert currencies
 			
 			db()->carts->update(
 				array( "cart-id" => $cart_id ),
-				array( '$set' => array( "items.{$i}.price" => $p ) )
+				array( '$set' => array(
+					"items.{$i}.price" => $p,
+					"items.{$i}.title" => $it["title"],
+					"items.{$i}.description" => $it["description"],
+				) )
 			);
 		}
 		return true;
