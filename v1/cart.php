@@ -155,6 +155,9 @@ function handle_cart_request( $uri, &$output )
 		else
 			$rv = $rv && Cart::add_address( $cart_id, $address, "billing" );
 		
+		// Fix the price info
+		Cart::freeze_prices( $cart_id );
+		
 		// Set the status "confirmed"
 		$rv = $rv && Cart::add_status( $cart_id, "confirmed" );
 		
