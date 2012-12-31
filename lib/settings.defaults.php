@@ -74,3 +74,7 @@ $content_type = "application/json";
 $sisow_merchant_id = null;
 $sisow_merchant_key = null;
 
+// Enable a fake test bank to debug the store without draining one's bank account.
+// Not recommended for production use.
+$enable_test_bank = false;
+

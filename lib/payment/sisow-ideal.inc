@@ -72,6 +72,7 @@ class SisowIdeal
 		}
 		
 		$trxid = (string)$response->transaction->trxid;
+		error_log( "init debug: Cart [{$cart_id}], xml " . print_r($response,true) . " \n", 3, "/tmp/sisow-ideal.log" );
 		db()->carts->update(
 			array( "cart-id" => $cart_id ),
 			array( 
@@ -123,9 +124,9 @@ class SisowIdeal
 		}
 		
 		return array(
-			strtolower( $response->transaction->status ),
-			(string)$response->transaction->issuerid,
-			(float)$response->transaction->amount / 100,
+			"status" => strtolower( $response->transaction->status ),
+			"issuer" => (string)$response->transaction->issuerid,
+			"amount" => (float)$response->transaction->amount / 100,
 		);
 	}
 }

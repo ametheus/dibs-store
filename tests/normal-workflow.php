@@ -86,7 +86,7 @@ print_r($o);
 
 
 print( "Paying with iDEAL.\n" );
-$o = dibs::req( "1/ideal/pay/{$cart_id}", array( "return-url" => "http://www.tweakers.net/" ) );
+$o = dibs::req( "1/ideal/pay/99/{$cart_id}", array( "return-url" => "http://www.tweakers.net/" ) );
 print( "Redirect to <" . $o["redirect-url"] . ">\n\n" );
 
 print( "Why don't you just go ahead and, um, do that, and I'm gonna go ahead and, 

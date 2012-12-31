@@ -40,21 +40,59 @@ function handle_ideal_request( $uri, &$output )
 	 *
 	 * Initiate an iDEAL payment to pay for the contents of this cart
 	 **/
-	if ( preg_match( '#^ideal/pay/([-0-9a-zA-z]+)/?$#', $uri, $A ) )
+	if ( preg_match( '#^ideal/pay/([0-9]+)/([-0-9a-zA-z]+)/?$#', $uri, $A ) )
 	{
-		$cart_id = $A[1];
+		$bank_id = (int)$A[1];
+		$cart_id = $A[2];
 		if ( !Cart::exists( $cart_id ) ) return 3;
 		if ( Cart::is_open( $cart_id ) ) return 10;
-		
 		$td = Cart::total_amount( $cart_id );
 		if ( $td < 0.005 ) return 11;
+		
+		// Filter test bank
+		global $enable_test_bank;
+		if ( ! $enable_test_bank && $bank_id == 99 ) return 12;
 		
 		$inv = Invoice::assign( $cart_id );
 		if ( ! $inv ) return 1;
 		
-		$url = SisowIdeal::initiate_payment( $cart_id, null, $inv );
+		$url = SisowIdeal::initiate_payment( $cart_id, $bank_id, $inv );
 		
 		$output = array( "redirect-url" => $url );
+		return 0;
+	}
+	
+	
+	/**
+	 * GET .../1/ideal/{status}/{cart-id}
+	 * 
+	 * Return from iDEAL gateway
+	 **/
+	if ( preg_match( '#^ideal/(ok|cancel)/([-0-9a-zA-z]+)/?$#', $uri, $A ) )
+	{
+		$status = $A[1];
+		$cart_id = $A[2];
+		$unique_code = @$_REQUEST["ec"];
+		
+		$vfy = SisowIdeal::verify_payment( $cart_id, $unique_code );
+		if ( $vfy["status"] == "success" )
+		{
+			$vfy["type"] = "ideal";
+			db()->carts->update(
+				array( "cart-id" => $cart_id ),
+				array( '$push' => array( "payments", $vfy ) )
+			);
+			
+			$td = Cart::total_amount( $cart_id );
+			if ( $td - $vfy["amount"] < 0.005 )
+				Cart::add_status( $cart_id, "paid" );
+			
+			$output = "Thank you very much.";
+		}
+		else
+		{
+			$output = array( "status" => $vfy["status"] );
+		}
 		return 0;
 	}
 	

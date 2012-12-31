@@ -107,6 +107,11 @@ class Help
 					"empty, free, or a credit order.",
 				"versions" => array(1),
 			);
+			case ( 12 ): return array(
+				"short" => "Bank does not exist",
+				"long" => "This bank does not quite exist.",
+				"versions" => array(1),
+			);
 		}
 		return false;
 	}
