@@ -90,9 +90,7 @@ function random_salt( $length = 12 )
 
 function get_user_info( $username )
 {
-	global $db;
-	
-	$u = $db->{'admin_users'}->find(array("username" => (string)$username));
+	$u = db()->{'admin_users'}->find(array("username" => (string)$username));
 	
 	if ( $u->count() == 0 ) return false;
 	if ( $u->count() > 1 ) throw new Exception( "Non-unique username [{$username}]" );
@@ -102,10 +100,8 @@ function get_user_info( $username )
 
 function list_users()
 {
-	global $db;
-	
 	$rv = array();
-	$u = $db->{'admin_users'}->find( array(), array("username" => true) );
+	$u = db()->{'admin_users'}->find( array(), array("username" => true) );
 	while ( $u->hasNext() )
 	{
 		$usr = $u->getNext();
@@ -117,8 +113,6 @@ function list_users()
 
 function add_user( $username, $password )
 {
-	global $db;
-	
 	if ( is_array(get_user_info($username)) )
 		throw new Exception( "User [{$username}] already exists." );
 	
@@ -129,21 +123,19 @@ function add_user( $username, $password )
 	$user["salt"]     = $pw["salt"];
 	$user["password"] = $pw["password"];
 	
-	$db->{'admin_users'}->insert($user);
+	db()->{'admin_users'}->insert($user);
 	return $user;
 }
 
 function delete_user( $username )
 {
-	global $db;
-	$db->{'admin_users'}->remove(array("username" => (string)$username));
+	db()->{'admin_users'}->remove(array("username" => (string)$username));
 	return true;
 }
 
 function set_password( $username, $password )
 {
-	global $db;
-	return $db->{'admin_users'}->update(
+	return db()->{'admin_users'}->update(
 		array("username" => (string)$username),
 		array('$set' => new_password($password))
 	);
@@ -164,10 +156,9 @@ function new_password( $password )
 
 function user_has_permission( $username, $permission )
 {
-	global $db;
 	$permission = normalize_permission_name( $permission );
 	
-	$u = $db->{'admin_users'}->find(
+	$u = db()->{'admin_users'}->find(
 		array( "username" => (string)$username ),
 		array( "permissions.{$permission}" => true )
 	);
@@ -182,20 +173,18 @@ function normalize_permission_name( $perm )
 }
 function user_grant_permission( $username, $permission )
 {
-	global $db;
 	$permission = normalize_permission_name( $permission );
 	
-	return $db->{'admin_users'}->update(
+	return db()->{'admin_users'}->update(
 		array( "username" => (string)$username ),
 		array( "\$set" => array( "permissions." . $permission => true ) )
 	);
 }
 function user_revoke_permission( $username, $permission )
 {
-	global $db;
 	$permission = normalize_permission_name( $permission );
 	
-	return $db->{'admin_users'}->update(
+	return db()->{'admin_users'}->update(
 		array( "username" => (string)$username ),
 		array( "\$unset" => array( "permissions." . $permission => true ) )
 	);
