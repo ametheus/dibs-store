@@ -70,10 +70,10 @@ class dibs
 		
 		
 		if ( !is_array($rv) )
-			throw new Exception( "Request error: [{$result}] is invalid JSON." );
+			throw new Exception( "Request error: invalid JSON.\n\n{$result}" );
 		
 		if ( $rv["status"] != 0 )
-			throw new Exception( "API error " . $rv["status"] . ": " . @$rv["error"] );
+			throw new Exception( "API error " . $rv["status"] . ": " . @$rv["error"] . "\n\n" . print_r($rv,true) );
 		
 		return $rv["output"];
 	}
