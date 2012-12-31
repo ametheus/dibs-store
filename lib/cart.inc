@@ -157,13 +157,33 @@ class Cart
 
 	/**
 	 * Return the cart object for the cart specified
+	 * 
+	 * Optional parameter {short}: the terseness of the returned value.
+	 *    0:  Full; copy the database exactly.
+	 *    1:  Polished: scrub a few fields one wouldn't like to show to end users
+	 *    2-n: t.b.d.
 	 **/
-	static function get( $cart_id )
+	static function get( $cart_id, $short = 1 )
 	{
-		$db = db();
-		return $db->carts->findOne( array(
+		$cart = db()->carts->findOne( array(
 			"cart-id" => $cart_id
 		) );
+		
+		if ( $short <= 0 ) return $cart;
+		
+		// Shortness is at least one. Strip some unnecessary fields.
+		unset( $cart["ip-addr"] );
+		unset( $cart["sisow-trxid"] );
+		unset( $cart["sisow-sessions"] );
+		
+		// Scrub the statuses to the bare minimum
+		foreach ( $cart["status"] as $k => $v )
+			$cart["status"][$k] = count($v) > 0;
+		
+		if ( $short <= 1 ) return $cart;
+		
+		// TODO: even shorter output.
+		return $cart;
 	}
 	
 	
