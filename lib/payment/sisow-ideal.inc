@@ -47,11 +47,13 @@ class SisowIdeal
 			"amount"        => $amount,
 			"entrancecode"  => $unique_code,
 			"description"   => $store_name,
-			"issuerid"      => $bank_id,
 			"returnurl"     => $api_base . "1/ideal/ok/{$cart_id}",
 			"cancelurl"     => $api_base . "1/ideal/cancel/{$cart_id}",
 			"callbackurl"   => $api_base . "1/ideal/cb/{$cart_id}",
 		);
+		
+		if ( $bank_id )
+			$query["issuerid"] = $bank_id;
 		
 		$pt = $invoice_no . $unique_code . $amount . $shop_id .
 			$sisow_merchant_id . $sisow_merchant_key;
@@ -123,6 +125,7 @@ class SisowIdeal
 		return array(
 			strtolower( $response->transaction->status ),
 			(string)$response->transaction->issuerid,
+			(float)$response->transaction->amount / 100,
 		);
 	}
 }

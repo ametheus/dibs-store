@@ -95,6 +95,18 @@ class Help
 				"long" => "The e-mail address you entered was invalid.",
 				"versions" => array(1),
 			);
+			case ( 10 ): return array(
+				"short" => "Cart is not yet closed",
+				"long" => "You are attempting to pay for an order that has not yet been confirmed. " .
+					"Confirm your order first and add an address.",
+				"versions" => array(1),
+			);
+			case ( 11 ): return array(
+				"short" => "Amount due is zero",
+				"long" => "You are attempting to pay for an order that is either " .
+					"empty, free, or a credit order.",
+				"versions" => array(1),
+			);
 		}
 		return false;
 	}
@@ -116,6 +128,9 @@ class Help
 			case ( 6 ): return 403;
 			case ( 7 ): return 404;
 			case ( 8 ): return 403;
+			case ( 9 ): return 400;
+			case ( 10 ): return 403;
+			case ( 11 ): return 403;
 		}
 		
 		// If any other error occurs, I must be a teapot:
