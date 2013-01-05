@@ -23,6 +23,7 @@
 	Central request handler.
 */
 
+header( "Access-Control-Allow-Origin: *" );
 ob_start();
 
 register_shutdown_function("shutdown");
