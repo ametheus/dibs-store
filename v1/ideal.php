@@ -97,6 +97,19 @@ function handle_ideal_request( $uri, &$output )
 	}
 	
 	
+	/**
+	 * GET .../1/ideal/issuers
+	 * 
+	 * Get a list of all payment issuers
+	 **/
+	if ( preg_match( '#^ideal/issuers/?$#', $uri, $A ) )
+	{
+		$output = SisowIdeal::issuers();
+		return 0;
+	}
+	
+	
+	
 	print( "Invalid iDEAL operation" );
 	return 2;
 }

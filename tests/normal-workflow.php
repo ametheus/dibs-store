@@ -85,9 +85,26 @@ print( "order submitted.\n" );
 print_r($o);
 
 
-print( "Paying with iDEAL.\n" );
-$o = dibs::req( "1/ideal/pay/99/{$cart_id}", array( "return-url" => "http://www.tweakers.net/" ) );
-print( "Redirect to <" . $o["redirect-url"] . ">\n\n" );
+
+print( "\n\nPaying with iDEAL.\n" );
+$banks = dibs::req( "1/ideal/issuers" );
+foreach ( $banks as $b )
+	print( "   * {$b['name']}\n" );
+$bank_id = false;
+while ( ! $bank_id )
+{
+	print( "Please enter the name of one of the banks above: " );
+	$bank = fgets(STDIN);
+	foreach ( $banks as $b )
+		if ( strtolower(trim($b["name"])) ==  strtolower(trim($bank)) )
+			$bank_id = $b["id"];
+}
+
+
+
+
+$o = dibs::req( "1/ideal/pay/{$bank_id}/{$cart_id}", array( "return-url" => "http://www.tweakers.net/" ) );
+print( "\nRedirect to <" . $o["redirect-url"] . ">\n\n" );
 
 print( "Why don't you just go ahead and, um, do that, and I'm gonna go ahead and, 
 	um, wait here until you get back. M'kay?\n" );

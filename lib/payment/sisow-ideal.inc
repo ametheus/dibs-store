@@ -148,5 +148,28 @@ class SisowIdeal
 			"amount" => (float)$response->transaction->amount / 100,
 		);
 	}
+	
+	
+	public static function issuers()
+	{
+		global $enable_test_bank;
+		
+		$r = null;
+		if ( $enable_test_bank )
+			$r = self::request( "DirectoryRequest", array( "test" => "true" ) );
+		else
+			$r = self::request( "DirectoryRequest" );
+		
+		if ( !$r ) return array();
+		
+		$rv = array();
+		foreach ( $r->directory->issuer as $i )
+			$rv[] = array(
+				"id" => (string)$i->issuerid,
+				"name" => (string)$i->issuername,
+			);
+		
+		return $rv;
+	}
 }
 
