@@ -26,7 +26,46 @@
 
 class SisowIdeal
 {
-	static function initiate_payment( $cart_id, $bank_id, $invoice_no )
+	protected static function request( $type, $query = array() )
+	{
+		$url = "https://www.sisow.nl/Sisow/iDeal/RestHandler.ashx/{$type}";
+		if ( count($query) )
+			$url .= "?" . http_build_query($query);
+		
+		$ch = curl_init();
+		curl_setopt( $ch, CURLOPT_URL, $url );
+		
+		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
+		curl_setopt( $ch, CURLOPT_VERBOSE, false );
+		curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, true);
+		curl_setopt( $ch, CURLOPT_SSL_VERIFYHOST, 2);
+		curl_setopt( $ch, CURLOPT_CAINFO, dirname(__FILE__) . "/sisow.nl.pem" );
+		
+		// Get the response and close the channel.
+		$txt = curl_exec($ch);
+		curl_close($ch);
+		
+		$response = @simplexml_load_string($txt);
+		
+		$d = date( "[Y-m-d H:i:s] " );
+		if ( !$response )
+		{
+			error_log( "{$d}{$type} fail: Invalid XML [{$txt}]\n\n", 3, "/tmp/sisow-ideal.log" );
+			return false;
+		}
+		
+		if ( $response->getName() == "errorresponse" )
+		{
+			$errno = (string)$response->error->errorcode;
+			$error = (string)$response->error->errormessage;
+			error_log( "{$d}{$type} fail: Cart [{$cart_id}], error code [{$errno}] message [{$error}]\n\n", 3, "/tmp/sisow-ideal.log" );
+			return false;
+		}
+		
+		return $response;
+	}
+	
+	public static function initiate_payment( $cart_id, $bank_id, $invoice_no )
 	{
 		global $sisow_merchant_id, $sisow_merchant_key;
 		global $store_name;
@@ -38,7 +77,6 @@ class SisowIdeal
 		
 		$api_base = ( $api_use_https ? "https" : "http" ) . "://" . $api_host . $api_root;
 		
-		$url = "https://www.sisow.nl/Sisow/iDeal/RestHandler.ashx/TransactionRequest";
 		$query = array(
 			"shopid"        => $shop_id,
 			"merchantid"    => $sisow_merchant_id,
@@ -59,17 +97,8 @@ class SisowIdeal
 			$sisow_merchant_id . $sisow_merchant_key;
 		$query["sha1"] = sha1($pt);
 		
-		$response = file_get_contents( $url . "?" . http_build_query($query) );
-		$response = @simplexml_load_string($response);
+		$response = self::request( "TransactionRequest", $query );
 		if ( !$response ) return false;
-		
-		if ( $response->getName() == "errorresponse" )
-		{
-			$errno = (string)$response->error->errorcode;
-			$error = (string)$response->error->errormessage;
-			error_log( "init fail: Cart [{$cart_id}], error code [{$errno}] message [{$error}]\n", 3, "/tmp/sisow-ideal.log" );
-			return false;
-		}
 		
 		$trxid = (string)$response->transaction->trxid;
 		error_log( "init debug: Cart [{$cart_id}], xml " . print_r($response,true) . " \n", 3, "/tmp/sisow-ideal.log" );
@@ -85,7 +114,7 @@ class SisowIdeal
 	}
 	
 	
-	static function verify_payment( $cart_id, $unique_code )
+	public static function verify_payment( $cart_id, $unique_code )
 	{
 		// TODO: unieke code.
 		if ( $unique_code !== "TODO" ) return false;
@@ -101,7 +130,6 @@ class SisowIdeal
 		$trxid = $cart["sisow-trxid"];
 		if ( !$trxid ) return false;
 		
-		$url = "https://www.sisow.nl/Sisow/iDeal/RestHandler.ashx/StatusRequest";
 		$query = array(
 			"trxid" => $trxid,
 			"shopid" => $shop_id,
@@ -111,17 +139,8 @@ class SisowIdeal
 		$pt = $trxid . $shop_id . $sisow_merchant_id . $sisow_merchant_key;
 		$query["sha1"] = sha1($pt);
 		
-		$response = file_get_contents( $url . "?" . http_build_query($query) );
-		$response = @simplexml_load_string($response);
+		$response = self::request( "StatusRequest", $query );
 		if ( !$response ) return false;
-		
-		if ( $response->getName() == "errorresponse" )
-		{
-			$errno = (string)$response->error->errorcode;
-			$error = (string)$response->error->errormessage;
-			error_log( "verify fail: Cart [{$cart_id}], error code [{$errno}] message [{$error}]\n", 3, "/tmp/sisow-ideal.log" );
-			return false;
-		}
 		
 		return array(
 			"status" => strtolower( $response->transaction->status ),
