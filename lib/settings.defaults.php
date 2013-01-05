@@ -28,6 +28,10 @@
 
 
 
+// The store name
+$store_name = "Unnamed dibs store";
+
+
 // The server (address and/or port) for mongodb, if not equal to localhost
 # $mongo_server = "mongo.example.org";
 
@@ -65,4 +69,12 @@ $hash_count = 50000;
 $content_type = "application/json";
 
 
+
+// Merchant ID/key for Sisow iDeal.
+$sisow_merchant_id = null;
+$sisow_merchant_key = null;
+
+// Enable a fake test bank to debug the store without draining one's bank account.
+// Not recommended for production use.
+$enable_test_bank = false;
 

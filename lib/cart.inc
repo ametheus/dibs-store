@@ -27,6 +27,22 @@
 class Cart
 {
 	/**
+	 * Add or replace an address {address} with optional {label}
+	 **/
+	static function add_address( $cart_id, $address, $label = "default" )
+	{
+		$label = str_replace( array(".","\$"), "-", $label );
+		
+		$rv = db()->carts->update(
+			array( "cart-id" => $cart_id ),
+			array( '$set' => array( "address.{$label}" => $address ) )
+		);
+		
+		return $rv > 0;
+	}
+	
+	
+	/**
 	 * Add {count} items of type {EAN} to the cart.
 	 **/
 	static function add_item( $cart_id, $EAN, $count )
@@ -53,6 +69,27 @@ class Cart
 			array( '$push' => array("items" => array(
 				"EAN" => $EAN,
 				"count" => $count ) ) )
+		);
+		
+		return $rv > 0;
+	}
+	
+	
+	/**
+	 * Add {status} to a cart
+	 **/
+	static function add_status( $cart_id, $status, $user = "system" )
+	{
+		$status = str_replace( array(".","\$"), "-", $status );
+		
+		$rv = db()->carts->update(
+			array( "cart-id" => $cart_id ),
+			array( '$push' =>
+				array( "status.{$status}" => array(
+					"date" => new MongoDate(),
+					"user" => (string)$user
+				) )
+			)
 		);
 		
 		return $rv > 0;
@@ -97,7 +134,7 @@ class Cart
 		// Now, create this cart in the database.
 		$db->carts->insert(array(
 			"cart-id" => $rv,
-			"created" => time(),
+			"created" => new MongoDate(),
 			"ip-addr" => $_SERVER["REMOTE_ADDR"],
 		));
 		
@@ -116,17 +153,89 @@ class Cart
 			"cart-id" => $cart_id
 		) )->count() > 0;
 	}
+	
+	
+	/**
+	 * Affix price information directly in the cart
+	 **/
+	static function freeze_prices( $cart_id, $currency = "EUR" )
+	{
+		$cart = db()->carts->findOne(
+			array( "cart-id" => $cart_id ),
+			array( "items" => 1 )
+		);
+		if ( ! $cart ) return null;
+		
+		foreach ( $cart["items"] as $i => $item )
+		{
+			$it = Item::get( (string)$item["EAN"] );
+			
+			$p = $it["price"];
+			// TODO: Convert currencies
+			
+			db()->carts->update(
+				array( "cart-id" => $cart_id ),
+				array( '$set' => array(
+					"items.{$i}.price" => $p,
+					"items.{$i}.title" => $it["title"],
+					"items.{$i}.description" => $it["description"],
+				) )
+			);
+		}
+		return true;
+	}
 
 
 	/**
 	 * Return the cart object for the cart specified
+	 * 
+	 * Optional parameter {short}: the terseness of the returned value.
+	 *    0:  Full; copy the database exactly.
+	 *    1:  Polished: scrub a few fields one wouldn't like to show to end users
+	 *    2-n: t.b.d.
 	 **/
-	static function get( $cart_id )
+	static function get( $cart_id, $short = 1 )
 	{
-		$db = db();
-		return $db->carts->findOne( array(
+		$cart = db()->carts->findOne( array(
 			"cart-id" => $cart_id
 		) );
+		
+		if ( $short <= 0 ) return $cart;
+		
+		// Shortness is at least one. Strip some unnecessary fields.
+		unset( $cart["ip-addr"] );
+		unset( $cart["sisow-trxid"] );
+		unset( $cart["sisow-sessions"] );
+		
+		// Scrub the statuses to the bare minimum
+		foreach ( $cart["status"] as $k => $v )
+			$cart["status"][$k] = count($v) > 0;
+		
+		if ( $short <= 1 ) return $cart;
+		
+		// TODO: even shorter output.
+		return $cart;
+	}
+	
+	
+	/**
+	 * Check if {cart} has status {status}
+	 **/
+	static function has_status( $cart_id, $status )
+	{
+		$status = str_replace( array(".","\$"), "-", $status );
+		
+		$cart = db()->carts->findOne(
+			array( "cart-id" => $cart_id ),
+			array( "status.{$status}" => 1 )
+		);
+		if ( !$cart ) return false;
+		
+		$statuses = @$cart["status"][$status];
+		$c = count( $statuses );
+		
+		if ( $c == 0 ) return false;
+		return $statuses[ $c - 1 ];
 	}
 	
 	
@@ -135,13 +244,7 @@ class Cart
 	 **/
 	static function is_open( $cart_id )
 	{
-		$db = db();
-		$cart = $db->carts->findOne(
-			array( "cart-id" => $cart_id ),
-			array( "status.confirmed" => 1, "_id" => 0 )
-		);
-		
-		return @$cart["status"]["confirmed"] == 0;
+		return ! self::has_status( $cart_id, "confirmed" );
 	}
 	
 	
@@ -196,5 +299,56 @@ class Cart
 		// Check if 'affected rows' > 0
 		$le = db()->lastError();
 		return ( $le["n"] > 0 );
+	}
+	
+	
+	/**
+	 * Update an arbitrary field in the order
+	 **/
+	static function set( $cart_id, $set )
+	{
+		db()->carts->update(
+			array( "cart-id" => $cart_id ),
+			array( '$set' => $set )
+		);
+		
+		// Check if 'affected rows' > 0
+		$le = db()->lastError();
+		return ( $le["n"] > 0 );
+	}
+	
+	
+	/**
+	 * Get the total amount on this cart
+	 **/
+	static function total_amount( $cart_id, $currency="EUR" )
+	{
+		// TODO: convert currencies
+		
+		$cart = db()->carts->findOne(
+			array( "cart-id" => $cart_id ),
+			array( "items" => 1 )
+		);
+		
+		$due = 0;
+		foreach ( $cart["items"] as $item )
+		{
+			$count = isset($item["count"]) ? (int)$item["count"] : 1;
+			if ( isset($item["grand-total"]) )
+			{
+				$due += $item["grand-total"]["amount"];
+			}
+			elseif ( isset($item["price"]) )
+			{
+				$due += $count * $item["price"]["amount"];
+			}
+			elseif ( isset($item["EAN"]) )
+			{
+				$it = Item::get( (string)$item["EAN"] );
+				$due += $count * $it["price"]["amount"];
+			}
+		}
+		
+		return $due;
 	}
 }

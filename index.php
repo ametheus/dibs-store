@@ -35,6 +35,7 @@ require_once( "lib/mongo.inc" );
 
 // Find out the API version from the request URI
 $uri = substr( $_SERVER["REQUEST_URI"], strlen($api_root) );
+list($uri) = explode( "?", $uri );
 
 if ( substr($uri,0,2) == "1/" )
 {
@@ -66,7 +67,8 @@ elseif ( preg_match( '#^h[ea]lp/(\d+)/?$#', $uri, $A ) )
 output_json( 1, array(
 	"error" => "Unknown API call.",
 	"additional information" => array(
-		"URI" => $_SERVER["REQUEST_URI"],
+		"URI" => $uri,
+		"query string" => $_GET,
 		"API root" => $api_root,
 		"translated URI" => $uri,
 	),
@@ -105,6 +107,7 @@ function output_json( $status, $output = null )
 	if ( $status != 0 )
 	{
 		require_once( "lib/help.inc" );
+		$http = Help::http_status( $status );
 		$error = Help::error_info( $status );
 		if ( $error )
 		{
@@ -112,10 +115,9 @@ function output_json( $status, $output = null )
 			global $api_host, $api_root, $api_use_https;
 			
 			$rv["error"] = $error;
-			$rv["see-also"] = ( $api_use_https ? "https://" : "http://" ) . 
+			$rv["see_also"] = ( $api_use_https ? "https://" : "http://" ) . 
 				$api_host . $api_root . "help/{$status}";
 			
-			$http = Help::http_status( $status );
 		}
 		else
 		{
@@ -143,7 +145,13 @@ function output_json( $status, $output = null )
 	else
 	{
 		// Sadly, earlier versions need a bit of help
-		print( json_utf8_encode( $rv ) );
+		$rv = json_encode( $rv );
+		$rv = str_replace( 
+			array( "\\",   "\\\\\"", "\"",   ),
+			array( "\\\\", "\\\"",   "\\\"", ),
+			$rv
+		);
+		print( json_decode( "\"{$rv}\"" ) );
 	}
 	print( "\n" );
 	
@@ -152,7 +160,10 @@ function output_json( $status, $output = null )
 
 
 /** 
+ * Scrub an object for output.
+ * 
  * Remove the MongoDB-specific "_id" attribute in this array
+ * Convert MongoDate objects to a human-readable string.
  **/
 function sanitize_mongo_objects( &$arr )
 {
@@ -162,71 +173,11 @@ function sanitize_mongo_objects( &$arr )
 	{
 		if ( $k == "_id" && is_object($arr[$k]) )
 			unset( $arr[$k] );
+		elseif ( is_a( $arr[$k], "MongoDate" ) )
+			$arr[$k] = date('Y-m-d H:i:s.', $arr[$k]->sec ) . $arr[$k]->usec;
 		elseif ( is_array($arr[$k]) )
 			sanitize_mongo_objects( $arr[$k] );
 	}
-}
-
-
-function json_utf8_encode( $x, $numbers_as_strings = false, $indent = 0, $indent_with="  " )
-{
-	if ( is_string($x) || ( is_numeric($x) && $numbers_as_strings == true ) )
-	{
-		$x = str_replace(
-			array( "\\",   "\"", "\r", "\n", "\t", "\0"),
-			array("\\\\","\\\"","\\r","\\n","\\t","\\0"),
-			$x
-		);
-		return "\"{$x}\"";
-	}
-	
-	if ( is_numeric($x) )
-		return $x;
-	
-	if ( $x === true )
-		return "true";
-	if ( $x === false )
-		return "false";
-	if ( $x === null )
-		return "null";
-	
-	if ( !is_array($x) )
-		return "null /* ".var_export($x,true)." */";
-	
-	
-	$I = "\n" . str_repeat( $indent_with, $indent );
-	$I1 = $I . $indent_with;
-	$f = create_function('$a', 'return json_utf8_encode( $a, ' .
-		( $numbers_as_strings ? 'true' : 'false' ) . 
-		', ' . ($indent + 1) . ', "' . $indent_with . '" );');
-	
-	
-	if ( is_numeric_array($x) )
-		return "[{$I1}" . str_repeat( $indent_with, $indent ) . 
-			implode( ",{$I1}",
-				array_map( $f, $x ) ) .
-		"{$I}]";
-	
-	// Else: non-numeric array.
-	$rv = "";
-	foreach ( $x as $k => $v )
-		$rv .= ",{$I1}" . json_utf8_encode( $k, true ) . 
-			": " . json_utf8_encode( $v, $numbers_as_strings, $indent + 1, $indent_with );
-			
-	if ( strlen($rv) )
-		$rv = $I1 . substr( $rv, 1 + strlen($I1) ) . $I;
-	return ( $indent == 0 ? "" : $I ) . "{{$rv}}";
-}
-function is_numeric_array( $a )
-{
-	if ( !is_array($a) ) return false;
-	if ( count($a) == 0 ) return false;
-	
-	$l = count($a);
-	for ( $i = 0; $i < $l; $i++ )
-		if ( !array_key_exists( $i, $a ) )
-			return false;
-	return true;
 }
 
 

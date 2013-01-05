@@ -31,8 +31,6 @@ require_once( "lib/password.inc" );
 
 function ask_for_username()
 {
-	global $db;
-	
 	$un = "";
 	while ( ! preg_match('/^\w{3,}$/', $un) )
 		$un = trim(readline("Enter username: "));
@@ -89,9 +87,7 @@ class OneSuperUser extends TestBase
 	
 	public function perform_test()
 	{
-		global $db;
-		
-		$u = $db->{'admin_users'}->find( array("permissions.root" => true), array() );
+		$u = db()->{'admin_users'}->find( array("permissions.root" => true), array() );
 		
 		return $u->count() > 0;
 	}

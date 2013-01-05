@@ -50,3 +50,21 @@ function db()
 }
 
 
+function get_counter( $counter_name )
+{
+	$rv = db()->counters->findOne( array( "_id" => (string)$counter_name ) );
+	if ( !$rv ) return null;
+	
+	return $rv["value"];
+}
+function inc_counter( $counter_name )
+{
+	$rv = get_counter( $counter_name );
+	if ( !$rv ) return null;
+	
+	db()->counters->update(
+		array( "_id" => (string)$counter_name ),
+		array( '$inc' => array( "value" => 1 ) )
+	);
+	return $rv;
+}

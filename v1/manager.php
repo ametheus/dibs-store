@@ -28,11 +28,11 @@ function handle_request( $uri, &$output )
 	$verb = $_SERVER["REQUEST_METHOD"];
 	
 	/**
-	 * Targets GET .../1/cart/...
+	 * Targets GET .../1/cart/... or GET .../1/confirm/...
 	 * 
 	 * Provide methods for viewing or updating shopping carts.
 	 **/
-	if ( substr($uri,0,5) == "cart/" )
+	if ( substr($uri,0,5) == "cart/" || substr($uri,0,8) == "confirm/" )
 	{
 		require_once( "v1/cart.php" );
 		return handle_cart_request( $uri, $output );
@@ -47,6 +47,17 @@ function handle_request( $uri, &$output )
 	{
 		require_once( "v1/product.php" );
 		return handle_item_request( $uri, $output );
+	}
+	
+	/**
+	 * Targets GET .../1/ideal/...
+	 * 
+	 * Process Payments using iDEAL
+	 **/
+	if ( substr($uri,0,6) == "ideal/" )
+	{
+		require_once( "v1/ideal.php" );
+		return handle_ideal_request( $uri, $output );
 	}
 	
 	print( "Most handlers are currently in development, " .
