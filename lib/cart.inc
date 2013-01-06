@@ -174,9 +174,9 @@ class Cart
 			// TODO: Convert currencies
 			
 			$set = array();
-			if ( !isset($it["price"]) ) $set["items.{$i}.price"] = $p;
-			if ( !isset($it["title"]) ) $set["items.{$i}.title"] = $it["title"];
-			if ( !isset($it["description"]) ) $set["items.{$i}.description"] = $it["description"];
+			if ( !isset($item["price"]) ) $set["items.{$i}.price"] = $p;
+			if ( !isset($item["title"]) ) $set["items.{$i}.title"] = $it["title"];
+			if ( !isset($item["description"]) ) $set["items.{$i}.description"] = $it["description"];
 			
 			if ( count($set) == 0 ) continue;
 			

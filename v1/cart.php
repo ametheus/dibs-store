@@ -42,6 +42,10 @@ function handle_cart_request( $uri, &$output )
 	if ( $verb == "GET" && strlen($uri) <= 5 )
 	{
 		$cart_id = Cart::create();
+		
+		// Flat-rate shipping costs
+		$rv = Cart::add_item( $cart_id, "PORTO", 1 );
+		
 		$output = array( "cart-id" => $cart_id );
 		return Cart::exists( $cart_id ) ? 0 : 1;
 	}
