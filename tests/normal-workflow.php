@@ -54,7 +54,7 @@ print(  "done. Total [{$o["items"][0]["count"]}]\n" );
 
 
 print( "No wait, i'm ordering 5 instead... " );
-$o = dibs::req( "1/cart/{$cart_id}/0", array(), array( "count" => 5 ) );
+$o = dibs::req( "1/cart/{$cart_id}/1", array(), array( "count" => 5 ) );
 print(  "done. Total [{$o["items"][0]["count"]}]\n\n" );
 
 
