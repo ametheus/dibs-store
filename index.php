@@ -38,7 +38,20 @@ require_once( "lib/mongo.inc" );
 $uri = substr( $_SERVER["REQUEST_URI"], strlen($api_root) );
 list($uri) = explode( "?", $uri );
 
-if ( substr($uri,0,2) == "1/" )
+if ( $uri == "versions" )
+{
+	$op = array(
+		"application" => array(
+			"name" => "dibs-store",
+			"version" => "0.2.0",
+		),
+		"API-versions" => array(
+			"1" => "0.2.0"
+		),
+	);
+	output_json( 0, $op );
+}
+elseif ( substr($uri,0,2) == "1/" )
 {
 	// This is an API version 1 call; proceed accordingly.
 	
