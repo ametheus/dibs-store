@@ -30,6 +30,7 @@
 
 // The store name
 $store_name = "Unnamed dibs store";
+$store_email = "store@example.org";
 
 
 // The server (address and/or port) for mongodb, if not equal to localhost
@@ -77,4 +78,22 @@ $sisow_merchant_key = null;
 // Enable a fake test bank to debug the store without draining one's bank account.
 // Not recommended for production use.
 $enable_test_bank = false;
+
+
+// The default location for the invoice template.
+$template_file = dirname(__FILE__) . "/../invoice-template.html";
+
+// The default commands to postprocess an invoice HTML file.
+// input and output files can be specified using the {if} and {of} parameters.
+// ex.   "/bin/convert-to-pdf  -i {if} -o {of}"
+$postprocess_invoice = array();
+
+
+// The URL to the thusfar unpublished e-mail webservice I'm working on.
+$email_webservice = "http://localhost:8064/mail";
+
+// CC each invoice to this address, or comma-separated list of addresses:
+$invoice_cc = false;
+
+
 

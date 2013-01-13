@@ -32,7 +32,8 @@ dibs::setup( $api_host, $api_root, $api_use_https, null );
 
 
 // TODO: something fancier.
-$ean = "1936000000001";
+$ean = "1936013030903";
+$another_ean = "1936013030927";
 
 
 print( "Creating a new cart\n" );
@@ -45,17 +46,22 @@ print( "Cart ID: [{$cart_id}]\n\n" );
 
 print( "Ordering a [{$ean}]... " );
 $o = dibs::req( "1/cart/{$cart_id}", array(), array( "EAN" => $ean, "count" => 1 ) );
-print(  "done. Total [{$o["items"][0]["count"]}]\n" );
+print(  "done. Total [{$o["items"][1]["count"]}]\n" );
 
 
 print( "Ordering another [{$ean}]... " );
 $o = dibs::req( "1/cart/{$cart_id}", array(), array( "EAN" => $ean, "count" => 1 ) );
-print(  "done. Total [{$o["items"][0]["count"]}]\n" );
+print(  "done. Total [{$o["items"][1]["count"]}]\n" );
 
 
 print( "No wait, i'm ordering 5 instead... " );
 $o = dibs::req( "1/cart/{$cart_id}/1", array(), array( "count" => 5 ) );
-print(  "done. Total [{$o["items"][0]["count"]}]\n\n" );
+print(  "done. Total [{$o["items"][1]["count"]}]\n\n" );
+
+
+print( "Also ordering two [{$another_ean}]s... " );
+$o = dibs::req( "1/cart/{$cart_id}", array(), array( "EAN" => $another_ean, "count" => 2 ) );
+print(  "done. Total [{$o["items"][2]["count"]}]\n" );
 
 
 print( "That's it; all done... " );
@@ -91,6 +97,7 @@ $banks = dibs::req( "1/ideal/issuers" );
 foreach ( $banks as $b )
 	print( "   * {$b['name']}\n" );
 $bank_id = false;
+if ( count($banks) == 1 ) $bank_id = $banks[0]["id"];
 while ( ! $bank_id )
 {
 	print( "Please enter the name of one of the banks above: " );
