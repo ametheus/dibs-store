@@ -42,4 +42,38 @@ class Invoice
 		
 		return $inv;
 	}
+	
+	
+	/**
+	 * Create an invoice document, and return the file name.
+	 **/
+	static function generate_invoice( $cart_id, $copy = false )
+	{
+		global $template_file, $postprocess_invoice;
+		if ( !file_exists($template_file) )
+			return "/dev/null";
+		
+		$cart = Cart::get( $cart_id, $short = 0 );
+		
+		ob_start();
+		include( $template_file );
+		$html = ob_get_contents();
+		ob_end_clean();
+		
+		$if = tempnam( "/tmp", "dibs-" );
+		file_put_contents( $if, $html );
+		
+		foreach ( $postprocess_invoice as $cmd )
+		{
+			$of = tempnam( "/tmp", "dibs-" );
+			$cmd = str_replace( array('{if}', '{of}'),
+				array( escapeshellarg($if),escapeshellarg($of)), $cmd );
+			
+			shell_exec( $cmd );
+			unlink( $if );
+			$if = $of;
+		}
+		
+		return $if;
+	}
 }

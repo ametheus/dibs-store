@@ -78,3 +78,12 @@ $sisow_merchant_key = null;
 // Not recommended for production use.
 $enable_test_bank = false;
 
+
+// The default location for the invoice template.
+$template_file = dirname(__FILE__) . "/../invoice-template.html";
+
+// The default commands to postprocess an invoice HTML file.
+// input and output files can be specified using the {if} and {of} parameters.
+// ex.   "/bin/convert-to-pdf  -i {if} -o {of}"
+$postprocess_invoice = array();
+
