@@ -127,7 +127,7 @@ foreach ( $deps as $d )
 {
 	$c = $tests[$d];
 	
-	@list($height,$width) = explode(" ",shell_exec("stty size"));
+	@list($height,$width) = explode(" ",shell_exec("stty size 2>/dev/null"));
 	
 	$width = max( $width - 9, 71 );
 	
