@@ -27,6 +27,7 @@
 require_once( "lib/cart.inc" );
 require_once( "lib/item.inc" );
 require_once( "lib/invoice.inc" );
+require_once( "lib/email.inc" );
 require_once( "lib/payment/sisow-ideal.inc" );
 
 
@@ -88,6 +89,10 @@ function handle_ideal_request( $uri, &$output )
 				Cart::add_status( $cart_id, "paid" );
 			
 			$output = "Thank you very much.";
+			
+			if ( !Cart::has_status( $cart_id, "invoice-sent" ) )
+				if ( Invoice::email_invoice( $cart_id ) )
+					$output .= "\nAn e-mail has been sent with a copy of the invoice.";
 		}
 		else
 		{

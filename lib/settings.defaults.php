@@ -30,6 +30,7 @@
 
 // The store name
 $store_name = "Unnamed dibs store";
+$store_email = "store@example.org";
 
 
 // The server (address and/or port) for mongodb, if not equal to localhost
@@ -86,4 +87,13 @@ $template_file = dirname(__FILE__) . "/../invoice-template.html";
 // input and output files can be specified using the {if} and {of} parameters.
 // ex.   "/bin/convert-to-pdf  -i {if} -o {of}"
 $postprocess_invoice = array();
+
+
+// The URL to the thusfar unpublished e-mail webservice I'm working on.
+$email_webservice = "http://localhost:8064/mail";
+
+// CC each invoice to this address, or comma-separated list of addresses:
+$invoice_cc = false;
+
+
 

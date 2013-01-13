@@ -76,4 +76,57 @@ class Invoice
 		
 		return $if;
 	}
+	
+	
+	/**
+	 * Send an e-mail with an invoice file.
+	 **/
+	static function email_invoice( $cart_id )
+	{
+		global $store_name, $store_email, $invoice_cc;
+		
+		$cart = Cart::get( $cart_id );
+		$file = self::generate_invoice( $cart_id, $copy = true );
+		
+		$att = array(
+			"factuur-{$cart["invoice-no"]}.pdf" => base64_encode(file_get_contents($file)),
+		);
+		unlink( $file );
+		
+		// TODO: Make this somehow configurable.
+		$mail = array(
+			"to" => $cart["email"],
+			"from" => "{$store_name} <{$store_email}>",
+			"subject" => "{$store_name}: order {$cart['invoice-no']}",
+			"mvg" => "de webwinkel",
+			"body" => "
+				<p>Uw bestelling is geplaatst, en wordt zo spoedig mogelijk verzonden.</p>
+				<p>Bijgaand vindt u de factuur voor deze order, voor uw administratie</p>
+			",
+			"attachments" => $att,
+		);
+		$rv = Email::pipe( $mail );
+		
+		if ( $invoice_cc )
+		{
+			$cc = array(
+				"to" => $invoice_cc,
+				"from" => "{$store_name} <{$store_email}>",
+				"subject" => "Kopie: {$store_name} order {$cart["invoice-no"]}",
+				"aanhef" => "Hoi hoi",
+				"mvg" => "de webwinkel",
+				"body" => "
+					<p>Zojuist is deze bestelling geplaatst.</p>
+					<p>Gelieve 'm zo snel mogelijk te verwerken.</p>
+				",
+				"attachments" => $att,
+			);
+			Email::pipe( $cc );
+		}
+		
+		if ( $rv )
+			Cart::add_status( $cart_id, "invoice-sent" );
+		
+		return $rv;
+	}
 }
