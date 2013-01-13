@@ -97,6 +97,7 @@ $banks = dibs::req( "1/ideal/issuers" );
 foreach ( $banks as $b )
 	print( "   * {$b['name']}\n" );
 $bank_id = false;
+if ( count($banks) == 1 ) $bank_id = $banks[0]["id"];
 while ( ! $bank_id )
 {
 	print( "Please enter the name of one of the banks above: " );
