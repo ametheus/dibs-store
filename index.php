@@ -43,10 +43,10 @@ if ( $uri == "versions" )
 	$op = array(
 		"application" => array(
 			"name" => "dibs-store",
-			"version" => "0.2.0",
+			"version" => "0.3.0-0.1.0",
 		),
 		"API-versions" => array(
-			"1" => "0.2.0"
+			"1" => "0.3.0-0.1.0"
 		),
 	);
 	output_json( 0, $op );
