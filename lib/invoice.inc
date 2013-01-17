@@ -47,13 +47,15 @@ class Invoice
 	/**
 	 * Create an invoice document, and return the file name.
 	 **/
-	static function generate_invoice( $cart_id, $copy = false )
+	static function generate_invoice( $cart, $billing_address = true, $copy = false )
 	{
 		global $template_file, $postprocess_invoice;
 		if ( !file_exists($template_file) )
 			return "/dev/null";
 		
-		$cart = Cart::get( $cart_id, $short = 0 );
+		// $cart can either be a cart object, or a cart ID.
+		if ( is_string( $cart ) )
+			$cart = Cart::get( $cart, $short = 0 );
 		
 		ob_start();
 		include( $template_file );
@@ -85,8 +87,8 @@ class Invoice
 	{
 		global $store_name, $store_email, $invoice_cc;
 		
-		$cart = Cart::get( $cart_id );
-		$file = self::generate_invoice( $cart_id, $copy = true );
+		$cart = Cart::get( $cart_id, $short = 0 );
+		$file = self::generate_invoice( $cart, $billing = true, $copy = true );
 		
 		$att = array(
 			"factuur-{$cart["invoice-no"]}.pdf" => base64_encode(file_get_contents($file)),
@@ -109,6 +111,13 @@ class Invoice
 		
 		if ( $invoice_cc )
 		{
+			$file = self::generate_invoice( $cart, $billing = false, $copy = false );
+			
+			$att = array(
+				"factuur-{$cart["invoice-no"]}.pdf" => base64_encode(file_get_contents($file)),
+			);
+			unlink( $file );
+			
 			$cc = array(
 				"to" => $invoice_cc,
 				"from" => "{$store_name} <{$store_email}>",
