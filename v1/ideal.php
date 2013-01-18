@@ -57,6 +57,9 @@ function handle_ideal_request( $uri, &$output )
 		$inv = Invoice::assign( $cart_id );
 		if ( ! $inv ) return 1;
 		
+		if ( !empty($_REQUEST["return-url"]) )
+			Cart::set( $cart_id, array( "return-url" => $_REQUEST["return-url"] ) );
+		
 		$url = SisowIdeal::initiate_payment( $cart_id, $bank_id, $inv );
 		
 		$output = array( "redirect-url" => $url );
@@ -74,6 +77,8 @@ function handle_ideal_request( $uri, &$output )
 		$status = $A[1];
 		$cart_id = $A[2];
 		$unique_code = @$_REQUEST["ec"];
+		
+		if ( !Cart::exists( $cart_id ) ) return 3;
 		
 		$vfy = SisowIdeal::verify_payment( $cart_id, $unique_code );
 		if ( $vfy["status"] == "success" )
@@ -98,6 +103,15 @@ function handle_ideal_request( $uri, &$output )
 		{
 			$output = array( "status" => $vfy["status"] );
 		}
+		
+		// Redirect to specified return URL if at all possible.
+		$c = db()->carts->findOne(array("cart-id" => $cart_id ), array( "return-url" => 1 ));
+		if ( $c && !empty($c["return-url"]) )
+		{
+			$u = str_replace( array("\n","\r"), "", $c["return-url"] );
+			header( "Location: {$u}" );
+		}
+		
 		return 0;
 	}
 	
