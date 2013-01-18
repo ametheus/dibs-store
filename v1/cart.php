@@ -136,8 +136,8 @@ function handle_cart_request( $uri, &$output )
 	 **/
 	if ( $verb == "POST"
 		&& preg_match( '#^confirm/([-0-9a-zA-z]+)/?$#', $uri, $A )
-		&& isset($_POST["email"])
-		&& isset($_POST["del-street1"]) && isset($_POST["del-postcode"]) )
+		&& !empty($_POST["email"])
+		&& !empty($_POST["del-street1"]) && !empty($_POST["del-postcode"]) )
 	{
 		$rv = true;
 		$cart_id = $A[1];
@@ -189,18 +189,18 @@ function get_address( $prefix = "" )
 	$rv = array();
 	$p = $prefix;
 	
-	if ( isset($_POST["{$p}name"]) )       $rv["name"]     = (string)$_POST["{$p}name"];
-	if ( isset($_POST["{$p}company"]) )    $rv["company"]  = (string)$_POST["{$p}company"];
-	if ( isset($_POST["{$p}department"]) ) $rv["det"]      = (string)$_POST["{$p}department"];
-	if ( isset($_POST["{$p}street1"]) )    $rv["street1"]  = (string)$_POST["{$p}street1"];
-	if ( isset($_POST["{$p}street2"]) )    $rv["street2"]  = (string)$_POST["{$p}street2"];
-	if ( isset($_POST["{$p}postcode"]) )   $rv["postcode"] = (string)$_POST["{$p}postcode"];
-	if ( isset($_POST["{$p}city"]) )       $rv["city"]     = (string)$_POST["{$p}city"];
-	if ( isset($_POST["{$p}state"]) )      $rv["state"]    = (string)$_POST["{$p}state"];
-	if ( isset($_POST["{$p}country"]) )    $rv["country"]  = (string)$_POST["{$p}country"];
-	if ( isset($_POST["{$p}planet"]) )     $rv["planet"]   = (string)$_POST["{$p}planet"];
+	if ( !empty($_POST["{$p}name"]) )       $rv["name"]       = (string)$_POST["{$p}name"];
+	if ( !empty($_POST["{$p}company"]) )    $rv["company"]    = (string)$_POST["{$p}company"];
+	if ( !empty($_POST["{$p}department"]) ) $rv["department"] = (string)$_POST["{$p}department"];
+	if ( !empty($_POST["{$p}street1"]) )    $rv["street1"]    = (string)$_POST["{$p}street1"];
+	if ( !empty($_POST["{$p}street2"]) )    $rv["street2"]    = (string)$_POST["{$p}street2"];
+	if ( !empty($_POST["{$p}postcode"]) )   $rv["postcode"]   = (string)$_POST["{$p}postcode"];
+	if ( !empty($_POST["{$p}city"]) )       $rv["city"]       = (string)$_POST["{$p}city"];
+	if ( !empty($_POST["{$p}state"]) )      $rv["state"]      = (string)$_POST["{$p}state"];
+	if ( !empty($_POST["{$p}country"]) )    $rv["country"]    = (string)$_POST["{$p}country"];
+	if ( !empty($_POST["{$p}planet"]) )     $rv["planet"]     = (string)$_POST["{$p}planet"];
 	
-	if ( isset($_POST["{$p}phone"]) )      $rv["phone"]    = (string)$_POST["{$p}phone"];
+	if ( !empty($_POST["{$p}phone"]) )      $rv["phone"]      = (string)$_POST["{$p}phone"];
 	
 	return $rv;
 }
