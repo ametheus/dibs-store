@@ -24,8 +24,15 @@
 */
 
 $cwd = dirname(__FILE__);
-require_once( "{$cwd}/../lib/settings.defaults.php" );
-@include_once( "{$cwd}/../settings.php" );
+$ip = ini_get( "include_path" );
+ini_set( "include_path", "{$cwd}/.." );
+
+require_once( "lib/settings.defaults.php" );
+@include_once( "settings.php" );
+require_once( "lib/mongo.inc" );
+
+ini_set( "include_path", $ip );
+
 require_once( "{$cwd}/dibs-api.inc" );
 
 dibs::setup( $api_host, $api_root, $api_use_https, null );
@@ -56,12 +63,51 @@ print(  "done. Total [{$o["items"][1]["count"]}]\n" );
 
 print( "No wait, i'm ordering 5 instead... " );
 $o = dibs::req( "1/cart/{$cart_id}/1", array(), array( "count" => 5 ) );
-print(  "done. Total [{$o["items"][1]["count"]}]\n\n" );
+print(  "done. Total [{$o["items"][1]["count"]}]\n" );
 
 
 print( "Also ordering two [{$another_ean}]s... " );
 $o = dibs::req( "1/cart/{$cart_id}", array(), array( "EAN" => $another_ean, "count" => 2 ) );
-print(  "done. Total [{$o["items"][2]["count"]}]\n" );
+print(  "done. Total [{$o["items"][2]["count"]}]\n\n" );
+
+
+
+$vc = "TEST-" . date( "ymd-His" );
+$V = array(
+	"_id" => $vc,
+	"type" => "cart-item",
+	"data" => array(
+		"title" => "Concertkaart reductie",
+		"description" => "9 maart, bavo",
+		"price" => array(
+			"currency" => "EUR",
+			"amount" => 20,
+			"VAT" => 6,
+			"original_price" => array(
+				"currency" => "EUR",
+				"amount" => 25,
+) ) ) );
+db()->vouchers->save($V);
+usleep( 100000 );
+
+print( "Entering voucher [{$vc}]... " );
+$o = dibs::req( "1/cart/{$cart_id}", array(), array( "voucher" => $vc ) );
+print(  "done.\n" );
+try
+{
+	print( "Entering voucher [TEST-130119-175146]... " );
+	$o = dibs::req( "1/cart/{$cart_id}", array(), array( "voucher" => "TEST-130119-175146" ) );
+	print(  "done.\n" );
+	print( "\n\nERROR: This should not have been possible.\n\n" );
+	exit( 1 );
+}
+catch ( Exception $e )
+{
+	if ( $e->getCode() != 14 ) throw $e;
+	print( "Impossible, as expected.\n\n " );
+}
+
+
 
 
 print( "That's it; all done... " );
