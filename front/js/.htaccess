@@ -1,6 +1,0 @@
-
-RewriteEngine On
-
-RewriteRule jquery.js jquery-1.8.3.min.js [L]
-
-
