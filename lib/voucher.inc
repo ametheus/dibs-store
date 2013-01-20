@@ -49,7 +49,7 @@ class Voucher
 			
 			// TODO: Fancy auto-loading plugin system.
 			if ( method_exists( __CLASS__, "_v_deinstall_{$type}" ) )
-				call_user_func( array(__CLASS__, "_v_deinstall_{$type}"), $cart_id, $voucher );
+				call_user_func( array(__CLASS__, "_v_deinstall_{$type}"), $voucher["cart_id"], $voucher );
 		}
 		
 		db()->vouchers->update(
