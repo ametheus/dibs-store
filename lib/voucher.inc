@@ -37,6 +37,9 @@ class Voucher
 		$voucher = db()->vouchers->findOne( array("_id" => $voucher_code ) );
 		if ( !$voucher ) return null;
 		
+		// Voucher type
+		$type = preg_replace( "/[^a-zA-Z_]+/", "_", $voucher["type"] );
+		
 		if ( !empty($voucher["cart_id"]) && ($oc = Cart::get($voucher["cart_id"])) )
 		{
 			if ( count($oc["status"]["confirmed"]) > 0 
@@ -44,7 +47,9 @@ class Voucher
 				&& count($oc["status"]["expired"]) == 0 )
 				return false;
 			
-			// TODO: 'deinstall' voucher
+			// TODO: Fancy auto-loading plugin system.
+			if ( method_exists( __CLASS__, "_v_deinstall_{$type}" ) )
+				call_user_func( array(__CLASS__, "_v_deinstall_{$type}"), $cart_id, $voucher );
 		}
 		
 		db()->vouchers->update(
@@ -52,12 +57,59 @@ class Voucher
 			array( '$set' => array( "cart_id" => $cart_id ) )
 		);
 		
-		// TODO: 'install' voucher
+		// TODO: Fancy auto-loading plugin system.
+		if ( method_exists( __CLASS__, "_v_install_{$type}" ) )
+			call_user_func( array(__CLASS__, "_v_install_{$type}"), $cart_id, $voucher );
 		
 		return Cart::get( $cart_id );
 	}
 	
 	
+	
+	/**
+	 * Install / deinstall code for "cart-item" plugin types.
+	 **/
+	static function _v_install_cart_item( $cart_id, $voucher )
+	{
+		$vd = $voucher["data"];
+		if ( !isset($vd["EAN"]) )         $vd["EAN"] = "VOUCHER";
+		if ( !isset($vd["title"]) )       $vd["title"] = "Redeemed voucher";
+		if ( !isset($vd["description"]) ) $vd["description"] = "";
+		if ( !isset($vd["count"]) )       $vd["count"] = 1;
+		
+		$vd["voucher-code"] = $voucher["_id"];
+		
+		$rv = db()->carts->update(
+			array( "cart-id" => $cart_id ),
+			array( '$push' => array("items" => $vd ) )
+		);
+		
+		return $rv > 0;
+	}
+	static function _v_deinstall_cart_item( $cart_id, $voucher )
+	{
+		$cart = Cart::get($cart_id);
+		
+		$rv = false;
+		foreach ( $cart["items"] as $i => $it )
+		{
+			if ( $it["voucher-code"] != $voucher["_id"] ) continue;
+			
+			// FIXME: is it possible to remove an array element in one query?
+			db()->carts->update(
+				array( "cart-id" => $cart_id ),
+				array( '$unset' => array( "items.{$i}" => 1 ) )
+			);
+			db()->carts->update(
+				array( "cart-id" => $cart_id ),
+				array( '$pull' => array( "items" => null ) )
+			);
+			$rv = true;
+			break;
+		}
+		
+		return $rv;
+	}
 }
 
 
