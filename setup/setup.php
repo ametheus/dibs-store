@@ -129,7 +129,7 @@ foreach ( $deps as $d )
 	
 	@list($height,$width) = explode(" ",shell_exec("stty size 2>/dev/null"));
 	
-	$width = max( $width - 9, 71 );
+	$width = max( $width - 9, 68 );
 	
 	print( special_ellipsis( $c->test_title, $width ) );
 	

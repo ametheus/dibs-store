@@ -78,7 +78,6 @@ $V = array(
 	"type" => "cart-item",
 	"data" => array(
 		"title" => "Concertkaart reductie",
-		"description" => "9 maart, bavo",
 		"price" => array(
 			"currency" => "EUR",
 			"amount" => 20,
@@ -88,11 +87,32 @@ $V = array(
 				"amount" => 25,
 ) ) ) );
 db()->vouchers->save($V);
+
+$V["_id"] = "{$vc}-a";
+db()->vouchers->save($V);
+
 usleep( 100000 );
 
 print( "Entering voucher [{$vc}]... " );
 $o = dibs::req( "1/cart/{$cart_id}", array(), array( "voucher" => $vc ) );
 print(  "done.\n" );
+print( "Entering voucher [{$vc}-a]... " );
+$o = dibs::req( "1/cart/{$cart_id}", array(), array( "voucher" => "{$vc}-a" ) );
+print(  "done.\n" );
+
+try
+{
+	print( "Entering voucher [{$vc}-b]... " );
+	$o = dibs::req( "1/cart/{$cart_id}", array(), array( "voucher" => "{$vc}-b" ) );
+	print(  "done.\n" );
+	print( "\n\nERROR: This should not have been possible.\n\n" );
+	exit( 1 );
+}
+catch ( Exception $e )
+{
+	if ( $e->getCode() != 13 ) throw $e;
+	print( "Impossible, as expected.\n\n " );
+}
 try
 {
 	print( "Entering voucher [TEST-130119-175146]... " );
