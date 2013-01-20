@@ -112,6 +112,16 @@ class Help
 				"long" => "This bank does not quite exist.",
 				"versions" => array(1),
 			);
+			case ( 13 ): return array(
+				"short" => "Invalid voucher code",
+				"long" => "This voucher does not exist. Please check your voucher code for errors, and try again.",
+				"versions" => array(1),
+			);
+			case ( 14 ): return array(
+				"short" => "Voucher used already",
+				"long" => "This voucher code has been previously used in a different cart.",
+				"versions" => array(1),
+			);
 		}
 		return false;
 	}

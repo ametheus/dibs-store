@@ -73,7 +73,10 @@ class dibs
 			throw new Exception( "Request error: invalid JSON.\n\n{$result}" );
 		
 		if ( $rv["status"] != 0 )
-			throw new Exception( "API error " . $rv["status"] . ": " . @$rv["error"] . "\n\n" . print_r($rv,true) );
+		{
+			$msg = "API error " . $rv["status"] . ": " . @$rv["error"] . "\n\n" . print_r($rv,true);
+			throw new Exception( $msg, $rv["status"] );
+		}
 		
 		return $rv["output"];
 	}

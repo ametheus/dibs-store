@@ -25,6 +25,7 @@
 
 require_once( "lib/cart.inc" );
 require_once( "lib/item.inc" );
+require_once( "lib/voucher.inc" );
 require_once( "lib/invoice.inc" );
 
 
@@ -96,6 +97,31 @@ function handle_cart_request( $uri, &$output )
 			return 0;
 		}
 		return 1;
+	}
+	
+	
+	
+	/**
+	 * POST .../1/cart/{cart-id}   {voucher}
+	 * 
+	 * Add a {voucher} to the cart.
+	 **/
+	if ( $verb == "POST" 
+		&& preg_match( '#^cart/([-0-9a-zA-z]+)/?$#', $uri, $A )
+		&& isset($_POST["voucher"]) )
+	{
+		$cart_id = $A[1];
+		$voucher_code = (string)$_POST["voucher"];
+		
+		if ( !Cart::exists( $cart_id ) ) return 3;
+		if ( !Cart::is_open( $cart_id ) ) return 5;
+		$va = Voucher::assign( $voucher_code, $cart_id );
+		if ( $va === null ) return 13;
+		if ( $va === false ) return 14;
+		if ( !is_array($va) ) return 1;
+		
+		$output = $va;
+		return 0;
 	}
 	
 	

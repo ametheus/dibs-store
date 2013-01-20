@@ -38,7 +38,7 @@ class Invoice
 		
 		$inv = inc_counter("invoice-no");
 		Cart::set( $cart_id, array( "invoice-no" => $inv ) );
-		Cart::add_status( $cart_id, "invoice assigned" );
+		Cart::add_status( $cart_id, "invoice-assigned" );
 		
 		return $inv;
 	}
