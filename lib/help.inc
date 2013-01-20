@@ -146,6 +146,9 @@ class Help
 			case ( 9 ): return 400;
 			case ( 10 ): return 403;
 			case ( 11 ): return 403;
+			case ( 12 ): return 404;
+			case ( 13 ): return 404;
+			case ( 14 ): return 409;
 		}
 		
 		// If any other error occurs, I must be a teapot:
