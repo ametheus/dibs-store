@@ -96,6 +96,7 @@ class Voucher
 			if ( $it["voucher-code"] != $voucher["_id"] ) continue;
 			
 			// FIXME: is it possible to remove an array element in one query?
+			// Answer: nope; <https://jira.mongodb.org/browse/SERVER-1014>
 			db()->carts->update(
 				array( "cart-id" => $cart_id ),
 				array( '$unset' => array( "items.{$i}" => 1 ) )
