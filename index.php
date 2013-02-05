@@ -151,23 +151,7 @@ function output_json( $status, $output = null )
 	sanitize_mongo_objects( $rv );
 	
 	
-	if ( version_compare( PHP_VERSION, '5.4.0' ) >= 0 )
-	{
-		// PHP 5.4 correctly handles unicode strings in JSON by itself.
-		print( json_encode( $rv, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ) );
-	}
-	else
-	{
-		// Sadly, earlier versions need a bit of help
-		$rv = json_encode( $rv );
-		$rv = str_replace( 
-			array( "\\",   "\\\\\"", "\"",   ),
-			array( "\\\\", "\\\"",   "\\\"", ),
-			$rv
-		);
-		print( json_decode( "\"{$rv}\"" ) );
-	}
-	print( "\n" );
+	print( _json_encode( $rv ) . "\n" );
 	
 	exit( $status );
 }
