@@ -28,7 +28,7 @@ require_once( "lib/mongo.inc" );
 
 class Password
 {
-	function authenticate( $username, $password )
+	public function authenticate( $username, $password )
 	{
 		$rv0 = true;
 		
@@ -46,7 +46,7 @@ class Password
 		return $rv1 && $rv0;
 	}
 
-	function constant_compare( $str1, $str2 )
+	private function constant_compare( $str1, $str2 )
 	{
 		// By making use of a constant time comparison function, we render a timing
 		// attack impossible.
@@ -63,7 +63,7 @@ class Password
 		return $rv;
 	}
 
-	function get_hash( $string, $salt )
+	private function get_hash( $string, $salt )
 	{
 		global $hash_algo, $hash_count;
 		
@@ -77,7 +77,7 @@ class Password
 		return base64_encode( $rv );
 	}
 
-	function random_salt( $length = 12 )
+	private function random_salt( $length = 12 )
 	{
 		$rv = "";
 		$o = 3 * ceil( $length / 4 );
@@ -91,7 +91,7 @@ class Password
 
 
 
-	function get_user_info( $username )
+	public function get_user_info( $username )
 	{
 		$u = db()->{'admin_users'}->find(array("username" => (string)$username));
 		
@@ -101,7 +101,7 @@ class Password
 		return $u->getNext();
 	}
 
-	function list_users()
+	public function list_users()
 	{
 		$rv = array();
 		$u = db()->{'admin_users'}->find( array(), array("username" => true) );
@@ -114,7 +114,7 @@ class Password
 		return $rv;
 	}
 
-	function add_user( $username, $password )
+	public function add_user( $username, $password )
 	{
 		if ( is_array(self::get_user_info($username)) )
 			throw new Exception( "User [{$username}] already exists." );
@@ -130,13 +130,13 @@ class Password
 		return $user;
 	}
 
-	function delete_user( $username )
+	public function delete_user( $username )
 	{
 		db()->{'admin_users'}->remove(array("username" => (string)$username));
 		return true;
 	}
 
-	function set_password( $username, $password )
+	public function set_password( $username, $password )
 	{
 		return db()->{'admin_users'}->update(
 			array("username" => (string)$username),
@@ -144,7 +144,7 @@ class Password
 		);
 	}
 
-	function new_password( $password )
+	private function new_password( $password )
 	{
 		$password = (string)$password;
 		$salt = self::random_salt();
@@ -157,7 +157,12 @@ class Password
 
 
 
-	function user_has_permission( $username, $permission )
+	private function normalize_permission_name( $perm )
+	{
+		return str_replace( array("."," "), "", $perm );
+	}
+	
+	public function has_permission( $username, $permission )
 	{
 		$permission = self::normalize_permission_name( $permission );
 		
@@ -170,11 +175,7 @@ class Password
 		$u = $u->getNext();
 		return @$u["permissions"][$permission];
 	}
-	function normalize_permission_name( $perm )
-	{
-		return str_replace( array("."," "), "", $perm );
-	}
-	function user_grant_permission( $username, $permission )
+	public function grant_permission( $username, $permission )
 	{
 		$permission = self::normalize_permission_name( $permission );
 		
@@ -183,7 +184,7 @@ class Password
 			array( "\$set" => array( "permissions." . $permission => true ) )
 		);
 	}
-	function user_revoke_permission( $username, $permission )
+	public function revoke_permission( $username, $permission )
 	{
 		$permission = self::normalize_permission_name( $permission );
 		
@@ -251,17 +252,17 @@ if ( basename(@$argv[0]) == basename(__FILE__) )
 	print( "\n" );
 	
 	print( "   Checking if yubama has the  'wheeze'   permission ...  " );
-	fail( Password::user_has_permission( 'yubama', 'wheeze' ), true );
+	fail( Password::has_permission( 'yubama', 'wheeze' ), true );
 	print( "   Granting yubama the         'wheeze'   permission ...  " );
-	fail( Password::user_grant_permission( 'yubama', 'wheeze' ) );
+	fail( Password::grant_permission( 'yubama', 'wheeze' ) );
 	print( "   Checking if yubama has the  'wheeze'   permission ...  " );
-	fail( Password::user_has_permission( 'yubama', 'wheeze' ) );
+	fail( Password::has_permission( 'yubama', 'wheeze' ) );
 	print( "   Checking if yubama has the  'cough'    permission ...  " );
-	fail( Password::user_has_permission( 'yubama', 'cough' ), true );
+	fail( Password::has_permission( 'yubama', 'cough' ), true );
 	print( "   Revoking yubama's           'wheeze'   permission ...  " );
-	fail( Password::user_revoke_permission( 'yubama', 'wheeze' ) );
+	fail( Password::revoke_permission( 'yubama', 'wheeze' ) );
 	print( "   Checking if yubama has the  'wheeze'   permission ...  " );
-	fail( Password::user_has_permission( 'yubama', 'wheeze' ), true );
+	fail( Password::has_permission( 'yubama', 'wheeze' ), true );
 	
 	print( "\n" );
 	
