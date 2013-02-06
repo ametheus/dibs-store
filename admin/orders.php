@@ -1,45 +1,36 @@
-<html>
-	<head>
-		<link rel="stylesheet" href="assets/dibs-admin.css"/>
+<?php
 
-		<script src="assets/jquery-1.9.1.js"></script>
-		
-	</head>
-	<body>
-		<div class="canvas">
-			<div class="header">
-				<div class="links"></div>
-			</div>
-			
-			<style>
+require_once( "assets/header.php" );
 
-#order-container
-{
-	margin-top: 42px;
-	width: 1240px;
-	min-height: 800px;
-	background: url(stripe.png) repeat;
-}
+?>
 
-tr
-{
-	background-color: #ffffff;
-}
-tr:even
-{
-	background-color: #dadada;
-}
+<style>
 
+	#order-container
+	{
+		width: 100%;
+		min-height: 800px;
+		background: url(stripe.png) repeat;
+	}
 
-			</style>
-			<div id="order-container">
-				<table>
-					<tbody></tbody>
-				</table>
-			</div>
-		</div>
-	</body>
-	<script>
+	tr
+	{
+		background-color: #ffffff;
+	}
+	tr:even
+	{
+		background-color: #dadada;
+	}
+
+</style>
+
+<div id="order-container">
+	<table>
+		<tbody></tbody>
+	</table>
+</div>
+
+<script>
 
 $(function()
 {
@@ -74,6 +65,8 @@ $(function()
 			if ( !I ) return "<td></td><td></td>";
 			
 			var ct = I.count ? I.count + "x" : "";
+			if ( I.EAN == "PORTO" ) ct = "";
+			
 			return '<td class="right">' + ct + '</td>' +
 				'<td>' + I.title + '</td>';
 		}
@@ -145,5 +138,8 @@ $(function()
 		change_preset( "Open", true );
 });
 
-	</script>
-</html>
+</script>
+
+<?php
+
+require_once( "assets/footer.php" );
