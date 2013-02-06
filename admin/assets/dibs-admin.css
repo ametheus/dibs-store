@@ -34,7 +34,7 @@ a
 	position: relative;
 }
 
-body
+body *
 {
 	font-family: verdana;
 	font-size: 9pt;
@@ -156,10 +156,19 @@ button
 }
 
 
-#order-container
+table
 {
-	margin-top: 42px;
-	width: 1240px;
-	min-height: 800px;
-	background: url(stripe.png) repeat;
+	border-collapse: collapse;
+	border-spacing: 0px;
 }
+table td, table th
+{
+	padding: 2px 5px;
+}
+
+table td.right, table th.right
+{
+	text-align: right;
+}
+
+

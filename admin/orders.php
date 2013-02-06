@@ -3,28 +3,35 @@
 		<link rel="stylesheet" href="assets/dibs-admin.css"/>
 
 		<script src="assets/jquery-1.9.1.js"></script>
-		<!--<script src="assets/jquery.hashchange.js"></script>-->
-
+		
 	</head>
 	<body>
 		<div class="canvas">
 			<div class="header">
-				<div class="links">
-<!-- 					<div><a href="#get_nieuw_klantenservice">Nieuw</a>&nbsp;(<span class="count get_nieuw_klantenservice">-</span>)</div>
-					<div><a href="#get_automatisch_klantenservice">Automatisch</a>&nbsp;(<span class="count get_automatisch_klantenservice">-</span>)</div>
-					<div><a href="#get_handmatig_klantenservice">Handmatig</a>&nbsp;(<span class="count get_handmatig_klantenservice">-</span>)</div>
-					<div><a href="#get_geparkeerd">Geparkeerd</a>&nbsp;(<span class="count get_geparkeerd">-</span>)</div>
-					<div><a href="#get_leverbare_backorders">Backorders</a>&nbsp;(<span class="count get_leverbare_backorders">-</span>)</div>
-					<div><a href="#get_1600">Na 16:00</a>&nbsp;(<span class="count get_1600">-</span>)</div>
-					<div><a href="#get_alle_backorders">Alle</a>&nbsp;</div>
-					<div><a href="#get_magazijn">Magazijn</a>&nbsp;(<span class="count get_magazijn">-</span>)</div>
-					<div><a href="#get_postnl">PostNL</a>&nbsp;(<span class="count get_postnl">-</span>)</div>
-					<div><a href="#get_rest">Rest</a>&nbsp;(<span class="count get_rest">-</span>)</div>
-					<div><a href="#get_klanten">Klanten</a>&nbsp;(<span class="count get_klanten">-</span>)</div>
-					<div><img src="http://static.managementboek.nl/jira-icons/refresh.gif" class="reload"/></div>
- -->				</div>
+				<div class="links"></div>
 			</div>
 			
+			<style>
+
+#order-container
+{
+	margin-top: 42px;
+	width: 1240px;
+	min-height: 800px;
+	background: url(stripe.png) repeat;
+}
+
+tr
+{
+	background-color: #ffffff;
+}
+tr:even
+{
+	background-color: #dadada;
+}
+
+
+			</style>
 			<div id="order-container">
 				<table>
 					<tbody></tbody>
@@ -37,9 +44,9 @@
 $(function()
 {
 	var presets = {
-		"Onverwerkt": { archive: 0, confirmed: 1, paid: 1, sent: 0 },
-		"Gestrand":   { archive: 0, confirmed: 1, paid: 0 },
-		"Verwerkt":   { archive: 0, confirmed: 1, paid: 1, sent: 0 }
+		"Open":       { archive: 0, confirmed: 1, paid: 1, sent: 0 },
+		"Stranded":   { archive: 0, confirmed: 1, paid: 0 },
+		"Processed":  { archive: 0, confirmed: 1, paid: 1, sent: 1 }
 	};
 	
 	for ( i in presets )
@@ -66,7 +73,8 @@ $(function()
 		{
 			if ( !I ) return "<td></td><td></td>";
 			
-			return '<td>' + I.count + 'x</td>' +
+			var ct = I.count ? I.count + "x" : "";
+			return '<td class="right">' + ct + '</td>' +
 				'<td>' + I.title + '</td>';
 		}
 		
@@ -76,8 +84,6 @@ $(function()
 			dataType: 'json',
 			success: function( data )
 			{
-				if ( location.hash.replace("#","") != preset ) return;
-				
 				tb.empty()
 				for ( var i = 0; i < data.length; i++ ) (function(i)
 				{
@@ -104,12 +110,12 @@ $(function()
 					var total = 0;
 					for ( var j = 0; j < cart.items.length; j++ )
 						total += ( ( cart.items[j].count ? cart.items[j].count : 1) * cart.items[j].price.amount );
-					rv += '<td'+rsp+'><strong>' + total + '</strong></td>';
+					rv += '<td class="right"'+rsp+'><strong>' + total.toFixed(2) + '</strong></td>';
 					
 					// Status fields
-					rv += '<td'+rsp+'>' + cart.status.confirmed ? 1 : 0 + '</td>';
-					rv += '<td'+rsp+'>' + cart.status.paid ? 1 : 0 + '</td>';
-					rv += '<td'+rsp+'>' + cart.status.sent ? 1 : 0 + '</td>';
+					rv += '<td'+rsp+'>' + (cart.status.confirmed ? 1 : 0) + '</td>';
+					rv += '<td'+rsp+'>' + (cart.status.paid ? 1 : 0) + '</td>';
+					rv += '<td'+rsp+'>' + (cart.status.sent ? 1 : 0) + '</td>';
 					
 					rv += '</tr>';
 					
@@ -136,7 +142,7 @@ $(function()
 	if ( pr in presets )
 		change_preset( pr, true );
 	else
-		change_preset( "Onverwerkt", true );
+		change_preset( "Open", true );
 });
 
 	</script>
