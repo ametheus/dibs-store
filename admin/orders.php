@@ -112,11 +112,14 @@ $(function()
 						
 						titles += I.title;
 					}
-					if ( porto )
+					if ( porto && j != porto )
 					{
 						counts += "<br />";
-						titles += "<br />Verzendkosten";
+						titles += "<br />";
 					}
+					if ( porto )
+						titles += "Verzendkosten";
+					
 					rv += '<td>'+counts+'</td>';
 					rv += '<td>'+titles+'</td>';
 					
