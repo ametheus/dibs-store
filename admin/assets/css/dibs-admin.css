@@ -27,10 +27,6 @@ body
 	background-attachment: fixed;
 }
 
-a
-{
-	color: #098EB2;
-}
 
 .canvas
 {
@@ -42,12 +38,6 @@ a
 	position: relative;
 }
 
-body *
-{
-	font-family: verdana;
-	font-size: 9pt;
-}
-
 button
 {
 	cursor: pointer;
@@ -57,7 +47,6 @@ button
 {
 	background-color: #fff;
 	border-bottom: 2px solid #000;
-	margin-bottom: 10px;
 	
 	padding: 10px;
 }
@@ -74,7 +63,6 @@ button
 	font-size: 13px;
 	padding: 0 7px;
 	line-height: 20px;
-	font-family: NeoSansMedium;
 	text-transform: uppercase;
 }
 
@@ -125,4 +113,25 @@ table td.right, table th.right
 	text-align: right;
 }
 
+
+
+div.status-icon
+{
+	display: inline-block;
+	font-size: 14px;
+	width: 14px;
+	height: 14px;
+	padding: 4px;
+	margin: 0px 4px;
+	border-radius: 3px;
+	text-align: center;
+	
+	background-color: #dadada;
+	color: #333333;
+}
+div.status-icon.active
+{
+	background-color: #337D1B;
+	color: white;
+}
 

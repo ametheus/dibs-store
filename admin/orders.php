@@ -9,8 +9,13 @@ require_once( "assets/header.php" );
 	#order-container
 	{
 		width: 100%;
+		padding: 1px 0px;
 		min-height: 800px;
-		background: url(./assets/stripe.png) repeat;
+		background: url(./assets/img/stripe.png) repeat;
+	}
+	#order-container table
+	{
+		margin: 15px 20px;
 	}
 
 	td, th
@@ -25,8 +30,9 @@ require_once( "assets/header.php" );
 	}
 	tr:nth-child(even)
 	{
-		background-color: #dadada;
+		background-color: #e8e8e8;
 	}
+	
 
 </style>
 
@@ -55,11 +61,21 @@ $(function()
 		$(".header .links").append('<div><a data-preset="'+i+'" href="#'+i+'">'+i+'</a>&nbsp;</div>');
 	}
 	
+	var status_icon = function( status, value, icon )
+	{
+		return '<div class="status-icon ' + status +
+			( value ? ' active' : '' ) + '" title="' + status + '">' + 
+			'<i class="' + icon + '"></i>' +
+			'</div>';
+	}
+	
 	
 	var change_preset = function( preset, force )
 	{
 		if ( !( preset in presets )) return console.log(preset);
+		
 		$(".header .links > div").removeClass( "active" );
+		$(".header .links > div[data-preset='" + preset + "']").addClass( "active" );
 		
 		if ( !force && location.hash.replace("#","") == preset ) return console.log("exit");
 		
@@ -80,18 +96,19 @@ $(function()
 				for ( var i = 0; i < data.length; i++ ) (function(i)
 				{
 					var cart = data[i];
-					var rv = "<tr>";
-					
 					var cart_id = cart["cart-id"];
+					
+					var rv = '<tr data-cart="' + cart_id + '">';
 					
 					// Invoice number
 					rv += '<td>' + cart["invoice-no"] + '</td>';
 					
 					// Permalink in shop frontend
-					rv += '<td><a href="' + shop_root + "#cart-" + cart_id + '">permalink</a></td>';
+					var pm = shop_root + "#cart-" + cart_id;
+					rv += '<td><a title="Permalink to this order" href="' + pm + '"><i class="icon-link"></i></a></td>';
 					
 					// Invoice PDF
-					rv += '<td><a href="download-invoice.php?cart-id=' + cart_id + '">invoice</a></td>';
+					rv += '<td><a href="download-invoice.php?cart-id=' + cart_id + '"><i class="icon-download"></i> Invoice</a></td>';
 					
 					// Cart items
 					var counts = '', titles = '';
@@ -134,9 +151,11 @@ $(function()
 					rv += '<td class="right"><strong>' + total.toFixed(2) + '</strong></td>';
 					
 					// Status fields
-					rv += '<td>' + (cart.status.confirmed ? 1 : 0) + '</td>';
-					rv += '<td>' + (cart.status.paid ? 1 : 0) + '</td>';
-					rv += '<td>' + (cart.status.sent ? 1 : 0) + '</td>';
+					rv += '<td>';
+					rv += status_icon( 'confirmed', cart.status.confirmed, 'icon-shopping-cart' );
+					rv += status_icon( 'paid',      cart.status.paid,      'icon-money' );
+					rv += status_icon( 'sent',      cart.status.sent,      'icon-truck' );
+					rv += '</td>';
 					
 					rv += '</tr>';
 					
