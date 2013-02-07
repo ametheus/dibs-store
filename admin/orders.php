@@ -58,9 +58,9 @@ require_once( "assets/header.php" );
 $(function()
 {
 	var presets = {
-		"Stranded":   { archive: 0, confirmed: 1, paid: 0 },
-		"Open":       { archive: 0, confirmed: 1, paid: 1, sent: 0 },
-		"Processed":  { archive: 0, confirmed: 1, paid: 1, sent: 1 }
+		"Stranded":   { cancelled: 0, archive: 0, confirmed: 1, paid: 0 },
+		"Open":       { cancelled: 0, archive: 0, confirmed: 1, paid: 1, sent: 0 },
+		"Processed":  { cancelled: 0, archive: 0, confirmed: 1, paid: 1, sent: 1 }
 	};
 	
 	for ( i in presets )
@@ -170,6 +170,8 @@ $(function()
 					rv += status_icon( 'confirmed', cart.status.confirmed, 'icon-shopping-cart' );
 					rv += status_icon( 'paid',      cart.status.paid,      'icon-money' );
 					rv += status_icon( 'sent',      cart.status.sent,      'icon-truck' );
+					rv += '&nbsp;&nbsp;';
+					rv += status_icon( 'cancelled', cart.status.cancelled, 'icon-remove-circle' );
 					rv += '</td>';
 					
 					rv += '</tr>';
