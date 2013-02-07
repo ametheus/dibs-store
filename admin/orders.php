@@ -58,8 +58,8 @@ require_once( "assets/header.php" );
 $(function()
 {
 	var presets = {
-		"Open":       { archive: 0, confirmed: 1, paid: 1, sent: 0 },
 		"Stranded":   { archive: 0, confirmed: 1, paid: 0 },
+		"Open":       { archive: 0, confirmed: 1, paid: 1, sent: 0 },
 		"Processed":  { archive: 0, confirmed: 1, paid: 1, sent: 1 }
 	};
 	
@@ -71,18 +71,23 @@ $(function()
 	var status_icon = function( status, value, icon )
 	{
 		return '<div class="status-icon ' + status +
-			( value ? ' active' : '' ) + '" title="' + status + '">' + 
+			( value ? ' active' : '' ) + '"' +
+			' title="' + status + '"' +
+			' data-status="' + status + '"' +
+			'>' + 
 			'<i class="' + icon + '"></i>' +
 			'</div>';
 	}
 	
+	
+	var tb = $("#order-container table tbody")
 	
 	var change_preset = function( preset, force )
 	{
 		if ( !( preset in presets )) return console.log(preset);
 		
 		$(".header .links > div").removeClass( "active" );
-		$(".header .links > div[data-preset='" + preset + "']").addClass( "active" );
+		$(".header .links > div a[data-preset='" + preset + "']").parent().addClass( "active" );
 		
 		if ( !force && location.hash.replace("#","") == preset ) return console.log("exit");
 		
@@ -90,8 +95,6 @@ $(function()
 		
 		// TODO:
 		var shop_root = "https://database.collegiummusicum.nl/ticketshop/";
-		
-		var tb = $("#order-container table tbody")
 		
 		$.ajax({
 			url: "./ajax/orders-by-status.php",
@@ -159,7 +162,7 @@ $(function()
 					// Total amount
 					var total = 0;
 					for ( var j = 0; j < cart.items.length; j++ )
-						total += ( ( cart.items[j].count ? cart.items[j].count : 1) * cart.items[j].price.amount );
+						total += ( ( cart.items[j].count ? cart.items[j].count : 1) * (cart.items[j].price ? cart.items[j].price.amount : 0) );
 					rv += '<td class="right"><strong>' + total.toFixed(2) + '</strong></td>';
 					
 					// Status fields
@@ -178,6 +181,30 @@ $(function()
 			}
 		});
 	};
+	
+	
+	tb.on( "click", "div.status-icon", function()
+	{
+		var icon = $(this);
+		if ( icon.hasClass("active") ) return;
+		
+		var status = icon.attr("data-status");
+		var cart_id = icon.parents("tr").attr("data-cart");
+		
+		if ( !confirm("Add status ["+status+"] to this order?") ) return;
+		
+		$.ajax({
+			url: "ajax/order-set-status.php",
+			type: "post",
+			data: { status: status, "cart-id": cart_id },
+			success: function()
+			{
+				icon.addClass("active");
+			}
+		});
+		
+		console.log([ cart_id, status ]);
+	})
 	
 	
 	$(".header .links a").click(function()
