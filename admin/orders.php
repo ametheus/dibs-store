@@ -20,15 +20,14 @@ require_once( "assets/header.php" );
 
 	td, th
 	{
-		vertical-align: top;
-		
+		text-align: left;
 	}
-	tr
+	tbody tr
 	{
 		background-color: #ffffff;
 		padding: 5px;
 	}
-	tr:nth-child(even)
+	tbody tr:nth-child(even)
 	{
 		background-color: #e8e8e8;
 	}
@@ -42,6 +41,14 @@ require_once( "assets/header.php" );
 
 <div id="order-container">
 	<table>
+		<thead>
+			<tr>
+				<th>Inv. no.</th>
+				<th>Link</th>
+				<th colspan="2">Items</th>
+				<th>Amount</th>
+				<th>Order status</th>
+			</tr>
 		<tbody></tbody>
 	</table>
 </div>
@@ -103,12 +110,17 @@ $(function()
 					// Invoice number
 					rv += '<td>' + cart["invoice-no"] + '</td>';
 					
+					// Links
+					rv += '<td>';
+					
 					// Permalink in shop frontend
 					var pm = shop_root + "#cart-" + cart_id;
-					rv += '<td><a title="Permalink to this order" href="' + pm + '"><i class="icon-link"></i></a></td>';
+					rv += '<a style="margin-right: 15px;" title="Permalink to this order" href="' + pm + '"><i class="icon-link"></i></a>';
 					
 					// Invoice PDF
-					rv += '<td><a href="download-invoice.php?cart-id=' + cart_id + '"><i class="icon-download"></i> Invoice</a></td>';
+					rv += '<a href="download-invoice.php?cart-id=' + cart_id + '"><i class="icon-download"></i> Invoice</a>';
+					
+					rv += '</td>';
 					
 					// Cart items
 					var counts = '', titles = '';
