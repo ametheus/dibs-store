@@ -25,171 +25,175 @@
 
 require_once( "lib/mongo.inc" );
 
-function authenticate( $username, $password )
+
+class Password
 {
-	$rv0 = true;
-	
-	$ui = get_user_info( (string)$username );
-	if ( !$ui )
+	public function authenticate( $username, $password )
 	{
-		$rv0 = false;
-		$ui = array( "password" => "hunter2", "salt" => "Worst movie in ages." );
+		$rv0 = true;
+		
+		$ui = self::get_user_info( (string)$username );
+		if ( !$ui )
+		{
+			$rv0 = false;
+			$ui = array( "password" => "hunter2", "salt" => "Worst movie in ages." );
+		}
+		
+		$rv1 = self::constant_compare(
+			self::get_hash( $password, $ui["salt"] ),
+			$ui["password"]
+		);
+		return $rv1 && $rv0;
+	}
+
+	private function constant_compare( $str1, $str2 )
+	{
+		// By making use of a constant time comparison function, we render a timing
+		// attack impossible.
+		
+		$rv = ( strlen($str1) == strlen($str2) );
+		
+		// Make both input strings the same length
+		$str1 = str_pad( $str1, strlen($str2) );
+		$str2 = str_pad( $str2, strlen($str1) );
+		
+		for ( $i = 0; $i < strlen($str1); $i++ )
+			$rv = $rv && ( $str1[$i] == $str2[$i] );
+		
+		return $rv;
+	}
+
+	private function get_hash( $string, $salt )
+	{
+		global $hash_algo, $hash_count;
+		
+		$rv = $string . $salt;
+		
+		for ( $i = 0; $i < max($hash_count,1); $i++ )
+		{
+			$rv = hash( $hash_algo, $rv, true );
+		}
+		
+		return base64_encode( $rv );
+	}
+
+	private function random_salt( $length = 12 )
+	{
+		$rv = "";
+		$o = 3 * ceil( $length / 4 );
+		
+		for ( $i = 0; $i < $o; $i++ )
+			$rv .= chr(mt_rand(0,255));
+		
+		return substr( base64_encode($rv), 0, $length );
+	}
+
+
+
+
+	public function get_user_info( $username )
+	{
+		$u = db()->{'admin_users'}->find(array("username" => (string)$username));
+		
+		if ( $u->count() == 0 ) return false;
+		if ( $u->count() > 1 ) throw new Exception( "Non-unique username [{$username}]" );
+		
+		return $u->getNext();
+	}
+
+	public function list_users()
+	{
+		$rv = array();
+		$u = db()->{'admin_users'}->find( array(), array("username" => true) );
+		while ( $u->hasNext() )
+		{
+			$usr = $u->getNext();
+			$rv[] = $usr["username"];
+		}
+		
+		return $rv;
+	}
+
+	public function add_user( $username, $password )
+	{
+		if ( is_array(self::get_user_info($username)) )
+			throw new Exception( "User [{$username}] already exists." );
+		
+		$username = (string)$username;
+		$user = array( "username" => $username );
+		
+		$pw = self::new_password( $password );
+		$user["salt"]     = $pw["salt"];
+		$user["password"] = $pw["password"];
+		
+		db()->{'admin_users'}->insert($user);
+		return $user;
+	}
+
+	public function delete_user( $username )
+	{
+		db()->{'admin_users'}->remove(array("username" => (string)$username));
+		return true;
+	}
+
+	public function set_password( $username, $password )
+	{
+		return db()->{'admin_users'}->update(
+			array("username" => (string)$username),
+			array('$set' => self::new_password($password))
+		);
+	}
+
+	private function new_password( $password )
+	{
+		$password = (string)$password;
+		$salt = self::random_salt();
+		
+		return array(
+			'salt' => $salt,
+			'password' => self::get_hash( $password, $salt )
+		);
+	}
+
+
+
+	private function normalize_permission_name( $perm )
+	{
+		return str_replace( array("."," "), "", $perm );
 	}
 	
-	$rv1 = constant_compare(
-		get_hash( $password, $ui["salt"] ),
-		$ui["password"]
-	);
-	return $rv1 && $rv0;
-}
-
-function constant_compare( $str1, $str2 )
-{
-	// By making use of a constant time comparison function, we render a timing
-	// attack impossible.
-	
-	$rv = ( strlen($str1) == strlen($str2) );
-	
-	// Make both input strings the same length
-	$str1 = str_pad( $str1, strlen($str2) );
-	$str2 = str_pad( $str2, strlen($str1) );
-	
-	for ( $i = 0; $i < strlen($str1); $i++ )
-		$rv = $rv && ( $str1[$i] == $str2[$i] );
-	
-	return $rv;
-}
-
-function get_hash( $string, $salt )
-{
-	global $hash_algo, $hash_count;
-	
-	$rv = $string . $salt;
-	
-	for ( $i = 0; $i < max($hash_count,1); $i++ )
+	public function has_permission( $username, $permission )
 	{
-		$rv = hash( $hash_algo, $rv, true );
+		$permission = self::normalize_permission_name( $permission );
+		
+		$u = db()->{'admin_users'}->find(
+			array( "username" => (string)$username ),
+			array( "permissions.{$permission}" => true )
+		);
+		
+		if ( !$u->hasNext() ) return false;
+		$u = $u->getNext();
+		return @$u["permissions"][$permission];
 	}
-	
-	return base64_encode( $rv );
-}
-
-function random_salt( $length = 12 )
-{
-	$rv = "";
-	$o = 3 * ceil( $length / 4 );
-	
-	for ( $i = 0; $i < $o; $i++ )
-		$rv .= chr(mt_rand(0,255));
-	
-	return substr( base64_encode($rv), 0, $length );
-}
-
-
-
-
-function get_user_info( $username )
-{
-	$u = db()->{'admin_users'}->find(array("username" => (string)$username));
-	
-	if ( $u->count() == 0 ) return false;
-	if ( $u->count() > 1 ) throw new Exception( "Non-unique username [{$username}]" );
-	
-	return $u->getNext();
-}
-
-function list_users()
-{
-	$rv = array();
-	$u = db()->{'admin_users'}->find( array(), array("username" => true) );
-	while ( $u->hasNext() )
+	public function grant_permission( $username, $permission )
 	{
-		$usr = $u->getNext();
-		$rv[] = $usr["username"];
+		$permission = self::normalize_permission_name( $permission );
+		
+		return db()->{'admin_users'}->update(
+			array( "username" => (string)$username ),
+			array( "\$set" => array( "permissions." . $permission => true ) )
+		);
 	}
-	
-	return $rv;
+	public function revoke_permission( $username, $permission )
+	{
+		$permission = self::normalize_permission_name( $permission );
+		
+		return db()->{'admin_users'}->update(
+			array( "username" => (string)$username ),
+			array( "\$unset" => array( "permissions." . $permission => true ) )
+		);
+	}
 }
-
-function add_user( $username, $password )
-{
-	if ( is_array(get_user_info($username)) )
-		throw new Exception( "User [{$username}] already exists." );
-	
-	$username = (string)$username;
-	$user = array( "username" => $username );
-	
-	$pw = new_password( $password );
-	$user["salt"]     = $pw["salt"];
-	$user["password"] = $pw["password"];
-	
-	db()->{'admin_users'}->insert($user);
-	return $user;
-}
-
-function delete_user( $username )
-{
-	db()->{'admin_users'}->remove(array("username" => (string)$username));
-	return true;
-}
-
-function set_password( $username, $password )
-{
-	return db()->{'admin_users'}->update(
-		array("username" => (string)$username),
-		array('$set' => new_password($password))
-	);
-}
-
-function new_password( $password )
-{
-	$password = (string)$password;
-	$salt = random_salt();
-	
-	return array(
-		'salt' => $salt,
-		'password' => get_hash( $password, $salt )
-	);
-}
-
-
-
-function user_has_permission( $username, $permission )
-{
-	$permission = normalize_permission_name( $permission );
-	
-	$u = db()->{'admin_users'}->find(
-		array( "username" => (string)$username ),
-		array( "permissions.{$permission}" => true )
-	);
-	
-	if ( !$u->hasNext() ) return false;
-	$u = $u->getNext();
-	return @$u["permissions"][$permission];
-}
-function normalize_permission_name( $perm )
-{
-	return str_replace( array("."," "), "", $perm );
-}
-function user_grant_permission( $username, $permission )
-{
-	$permission = normalize_permission_name( $permission );
-	
-	return db()->{'admin_users'}->update(
-		array( "username" => (string)$username ),
-		array( "\$set" => array( "permissions." . $permission => true ) )
-	);
-}
-function user_revoke_permission( $username, $permission )
-{
-	$permission = normalize_permission_name( $permission );
-	
-	return db()->{'admin_users'}->update(
-		array( "username" => (string)$username ),
-		array( "\$unset" => array( "permissions." . $permission => true ) )
-	);
-}
-
 
 
 if ( basename(@$argv[0]) == basename(__FILE__) )
@@ -213,10 +217,10 @@ if ( basename(@$argv[0]) == basename(__FILE__) )
 	print( "Testing password mechanism.\n\n" );
 	
 	print( "   Checking if user 'yubama' currently exists... " );
-	if ( get_user_info('yubama') )
+	if ( Password::get_user_info('yubama') )
 	{
 		print( yellow("yes. He might not like what we're about to do.") . "\n" );
-		delete_user('yubama');
+		Password::delete_user('yubama');
 	}
 	else
 	{
@@ -225,49 +229,49 @@ if ( basename(@$argv[0]) == basename(__FILE__) )
 	
 	print( "   Adding user 'yubama' with password 'spanklicious'... " );
 	// How'd I come up with this?
-	fail( add_user( 'yubama', 'spanklicious' ) );
+	fail( Password::add_user( 'yubama', 'spanklicious' ) );
 	print( "   Checking if he's really there...  " );
-	$lu = list_users();
+	$lu = Password::list_users();
 	fail( in_array( 'yubama', $lu ) );
 	
 	print( "\n" );
 	
 	print( "   Authenticating  'yubama'    with password  'spanklicious' ...  " );
-	fail( authenticate( 'yubama', 'spanklicious' ) );
+	fail( Password::authenticate( 'yubama', 'spanklicious' ) );
 	print( "   Authenticating  'yubama'    with password  'espinoza'     ...  " );
-	fail( authenticate( 'yubama', 'espinoza' ), true );
+	fail( Password::authenticate( 'yubama', 'espinoza' ), true );
 	print( "   Authenticating  'theodore'  with password  'spanklicious' ...  " );
-	fail( authenticate( 'theodore', 'spanklicious' ), true );
+	fail( Password::authenticate( 'theodore', 'spanklicious' ), true );
 	print( "   Changing        'yubama's   password to    'espinoza'     ...  " );
-	fail( set_password( 'yubama', 'espinoza' ) );
+	fail( Password::set_password( 'yubama', 'espinoza' ) );
 	print( "   Authenticating  'yubama'    with password  'espinoza'     ...  " );
-	fail( authenticate( 'yubama', 'espinoza' ) );
+	fail( Password::authenticate( 'yubama', 'espinoza' ) );
 	print( "   Authenticating  'yubama'    with password  'spanklicious' ...  " );
-	fail( authenticate( 'yubama', 'spanklicious' ), true );
+	fail( Password::authenticate( 'yubama', 'spanklicious' ), true );
 	
 	print( "\n" );
 	
 	print( "   Checking if yubama has the  'wheeze'   permission ...  " );
-	fail( user_has_permission( 'yubama', 'wheeze' ), true );
+	fail( Password::has_permission( 'yubama', 'wheeze' ), true );
 	print( "   Granting yubama the         'wheeze'   permission ...  " );
-	fail( user_grant_permission( 'yubama', 'wheeze' ) );
+	fail( Password::grant_permission( 'yubama', 'wheeze' ) );
 	print( "   Checking if yubama has the  'wheeze'   permission ...  " );
-	fail( user_has_permission( 'yubama', 'wheeze' ) );
+	fail( Password::has_permission( 'yubama', 'wheeze' ) );
 	print( "   Checking if yubama has the  'cough'    permission ...  " );
-	fail( user_has_permission( 'yubama', 'cough' ), true );
+	fail( Password::has_permission( 'yubama', 'cough' ), true );
 	print( "   Revoking yubama's           'wheeze'   permission ...  " );
-	fail( user_revoke_permission( 'yubama', 'wheeze' ) );
+	fail( Password::revoke_permission( 'yubama', 'wheeze' ) );
 	print( "   Checking if yubama has the  'wheeze'   permission ...  " );
-	fail( user_has_permission( 'yubama', 'wheeze' ), true );
+	fail( Password::has_permission( 'yubama', 'wheeze' ), true );
 	
 	print( "\n" );
 	
 	print( "   Deleting user 'yubama' ...  " );
-	fail( delete_user('yubama') );
+	fail( Password::delete_user('yubama') );
 	print( "   Checking if he's really gone ...  " );
-	fail( !is_array(get_user_info('yubama')) );
+	fail( !is_array(Password::get_user_info('yubama')) );
 	print( "   Checking if the number of users decreased just now ...  " );
-	fail( (count($lu) - count(list_users())) == 1 );
+	fail( (count($lu) - count(Password::list_users())) == 1 );
 	
 	
 	print( "\nDone.\n" );

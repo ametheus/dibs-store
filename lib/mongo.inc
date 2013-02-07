@@ -68,3 +68,27 @@ function inc_counter( $counter_name )
 	);
 	return $rv;
 }
+
+
+/**
+ * jQuery-compatible json_encode.
+ **/
+function _json_encode( $rv )
+{
+	if ( version_compare( PHP_VERSION, '5.4.0' ) >= 0 )
+	{
+		// PHP 5.4 correctly handles unicode strings in JSON by itself.
+		return json_encode( $rv, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
+	}
+	else
+	{
+		// Sadly, earlier versions need a bit of help
+		$rv = json_encode( $rv );
+		$rv = str_replace( 
+			array( "\\",   "\\\\\"", "\"",   ),
+			array( "\\\\", "\\\"",   "\\\"", ),
+			$rv
+		);
+		return json_decode( "\"{$rv}\"" );
+	}
+}
