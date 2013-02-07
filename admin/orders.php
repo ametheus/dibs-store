@@ -10,14 +10,20 @@ require_once( "assets/header.php" );
 	{
 		width: 100%;
 		min-height: 800px;
-		background: url(stripe.png) repeat;
+		background: url(./assets/stripe.png) repeat;
 	}
 
+	td, th
+	{
+		vertical-align: top;
+		
+	}
 	tr
 	{
 		background-color: #ffffff;
+		padding: 5px;
 	}
-	tr:even
+	tr:nth-child(even)
 	{
 		background-color: #dadada;
 	}
@@ -60,17 +66,6 @@ $(function()
 		
 		var tb = $("#order-container table tbody")
 		
-		var fmt_item = function( I )
-		{
-			if ( !I ) return "<td></td><td></td>";
-			
-			var ct = I.count ? I.count + "x" : "";
-			if ( I.EAN == "PORTO" ) ct = "";
-			
-			return '<td class="right">' + ct + '</td>' +
-				'<td>' + I.title + '</td>';
-		}
-		
 		$.ajax({
 			url: "./ajax/orders-by-status.php",
 			data: presets[preset],
@@ -85,37 +80,59 @@ $(function()
 					
 					var cart_id = cart["cart-id"];
 					
-					var rsp = cart.items.length > 0 ? ' rowspan="'+cart.items.length+'"' : '';
-					
 					// Invoice number
-					rv += '<td'+rsp+'>' + cart["invoice-no"] + '</td>';
+					rv += '<td>' + cart["invoice-no"] + '</td>';
 					
 					// Permalink in shop frontend
-					rv += '<td'+rsp+'><a href="' + shop_root + "#cart-" + cart_id + '">permalink</a></td>';
+					rv += '<td><a href="' + shop_root + "#cart-" + cart_id + '">permalink</a></td>';
 					
 					// Invoice PDF
-					rv += '<td'+rsp+'><a href="download-invoice.php?cart-id=' + cart_id + '">invoice</a></td>';
+					rv += '<td><a href="download-invoice.php?cart-id=' + cart_id + '">invoice</a></td>';
 					
-					// Item #1
-					rv += fmt_item( cart.items[0] );
+					// Cart items
+					var counts = '', titles = '';
+					var porto = 0;
+					for ( var j = 0; j < cart.items.length; j++ )
+					{
+						var I = cart.items[j];
+						if ( I.EAN == "PORTO" )
+						{
+							porto++;
+							continue;
+						}
+						
+						if ( j != porto )
+						{
+							counts += "<br />";
+							titles += "<br />";
+						}
+						
+						if ( I.count && ( I.EAN != "PORTO" ) )
+							counts += I.count + "x";
+						
+						titles += I.title;
+					}
+					if ( porto )
+					{
+						counts += "<br />";
+						titles += "<br />Verzendkosten";
+					}
+					rv += '<td>'+counts+'</td>';
+					rv += '<td>'+titles+'</td>';
 					
 					// Total amount
 					var total = 0;
 					for ( var j = 0; j < cart.items.length; j++ )
 						total += ( ( cart.items[j].count ? cart.items[j].count : 1) * cart.items[j].price.amount );
-					rv += '<td class="right"'+rsp+'><strong>' + total.toFixed(2) + '</strong></td>';
+					rv += '<td class="right"><strong>' + total.toFixed(2) + '</strong></td>';
 					
 					// Status fields
-					rv += '<td'+rsp+'>' + (cart.status.confirmed ? 1 : 0) + '</td>';
-					rv += '<td'+rsp+'>' + (cart.status.paid ? 1 : 0) + '</td>';
-					rv += '<td'+rsp+'>' + (cart.status.sent ? 1 : 0) + '</td>';
+					rv += '<td>' + (cart.status.confirmed ? 1 : 0) + '</td>';
+					rv += '<td>' + (cart.status.paid ? 1 : 0) + '</td>';
+					rv += '<td>' + (cart.status.sent ? 1 : 0) + '</td>';
 					
 					rv += '</tr>';
 					
-					for ( var j = 1; j < cart.items.length; j++ )
-					{
-						rv += '<tr>' + fmt_item( cart.items[j] ) + '</tr>';
-					}
 					
 					tb.append(rv);
 					

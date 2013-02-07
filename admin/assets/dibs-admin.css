@@ -116,7 +116,8 @@ table
 }
 table td, table th
 {
-	padding: 2px 5px;
+	padding: 5px 10px;
+	vertical-align: top;
 }
 
 table td.right, table th.right
