@@ -70,9 +70,20 @@ $(function()
 	
 	var status_icon = function( status, value, icon )
 	{
+		var alttext = status;
+		if ( value )
+		{
+			for ( var i = 0; i < value.length; i++ )
+				alttext += "\nSet by [" + value[i].user + "] on [" + 
+					(new Date(value[i].date.sec*1000)).toLocaleString() + "]";
+			if ( !value.length ) value = false;
+		}
+		else
+			alttext = "Click to mark order as '"+status+"'";
+		
 		return '<div class="status-icon ' + status +
 			( value ? ' active' : '' ) + '"' +
-			' title="' + status + '"' +
+			' title="' + alttext + '"' +
 			' data-status="' + status + '"' +
 			'>' + 
 			'<i class="' + icon + '"></i>' +
@@ -202,6 +213,7 @@ $(function()
 			success: function()
 			{
 				icon.addClass("active");
+				icon.attr("title","Switch tabs or reload the page to update order status");
 			}
 		});
 		
