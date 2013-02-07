@@ -37,17 +37,17 @@ function ask_for_username()
 	
 	//print( "Checking if [{$un}] exists...\n" );
 	
-	if ( !get_user_info($un) )
+	if ( !Password::get_user_info($un) )
 	{
 		$pw = trim(readline("Enter a password for user [{$un}]: "));
-		add_user( $un, $pw );
+		Password::add_user( $un, $pw );
 	}
 	
 	return $un;
 }
 function promote_to_super_admin( $username )
 {
-	user_grant_permission( $username, 'root' );
+	Password::user_grant_permission( $username, 'root' );
 }
 
 
@@ -63,7 +63,7 @@ class AdminUsers extends TestBase
 	
 	public function perform_test()
 	{
-		return count(list_users()) > 0;
+		return count(Password::list_users()) > 0;
 	}
 	public $recoverable = true;
 	
@@ -99,7 +99,7 @@ class OneSuperUser extends TestBase
 		print( "Please specify which user to promote to super admin, or " .
 			"enter a new user to create one.\n" );
 		print( "Existing users:  " );
-		$lu = list_users();
+		$lu = Password::list_users();
 		sort($lu);
 		foreach ( $lu as $u )
 			print( "  " . purple($u) );
