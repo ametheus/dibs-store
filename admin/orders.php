@@ -49,7 +49,17 @@ require_once( "assets/header.php" );
 				<th>Amount</th>
 				<th>Order status</th>
 			</tr>
+		</thead>
 		<tbody></tbody>
+		<tfoot>
+			<tr>
+				<th colspan="2">Total</th>
+				<td class="total right"></td>
+				<td class="total"></td>
+				<td class="total right"></td>
+				<th class="total right"></th>
+			</tr>
+		</tfoot>
 	</table>
 </div>
 
@@ -91,7 +101,8 @@ $(function()
 	}
 	
 	
-	var tb = $("#order-container table tbody")
+	var tb = $("#order-container table tbody");
+	var total_foot = $("#order-container table tfoot .total");
 	
 	var change_preset = function( preset, force )
 	{
@@ -104,6 +115,9 @@ $(function()
 		
 		location.hash = preset;
 		
+		tb.empty();
+		total_foot.empty();
+		
 		// TODO:
 		var shop_root = "https://database.collegiummusicum.nl/ticketshop/";
 		
@@ -113,7 +127,8 @@ $(function()
 			dataType: 'json',
 			success: function( data )
 			{
-				tb.empty()
+				var totals_by_ean = {};
+				
 				for ( var i = 0; i < data.length; i++ ) (function(i)
 				{
 					var cart = data[i];
@@ -173,7 +188,17 @@ $(function()
 					// Total amount
 					var total = 0;
 					for ( var j = 0; j < cart.items.length; j++ )
-						total += ( ( cart.items[j].count ? cart.items[j].count : 1) * (cart.items[j].price ? cart.items[j].price.amount : 0) );
+					{
+						var I = cart.items[j];
+						var ol = ( I.count ? I.count : 1 ) * (I.price ? I.price.amount : 0);
+						total += ol;
+						
+						if ( !( I.EAN in totals_by_ean ))
+							totals_by_ean[ I.EAN ] = { title: I.title, count: 0, amount: 0 };
+						
+						totals_by_ean[ I.EAN ].amount += ol;
+						totals_by_ean[ I.EAN ].count += ( I.count ? I.count : 1 );
+					}
 					rv += '<td class="right"><strong>' + total.toFixed(2) + '</strong></td>';
 					
 					// Status fields
@@ -191,6 +216,29 @@ $(function()
 					tb.append(rv);
 					
 				})( i );
+				
+				var i = {i:0,t:0};
+				var add_total = function( X )
+				{
+					if ( i.i )
+						total_foot.append( "<br />" );
+					
+					i.t += X.amount;
+					
+					$(total_foot[0]).append( X.count + "x" );
+					$(total_foot[1]).append( X.title );
+					$(total_foot[2]).append( "€&nbsp;" + X.amount.toFixed(2) );
+					$(total_foot[3]).html( "€&nbsp;" + i.t.toFixed(2) );
+					
+					
+					i.i++;
+				}
+				
+				for ( ean in totals_by_ean )
+					if ( ean != "PORTO" )
+						add_total( totals_by_ean[ean] );
+				if ( totals_by_ean.PORTO )
+					add_total( totals_by_ean.PORTO );
 			}
 		});
 	};
