@@ -47,7 +47,7 @@ function ask_for_username()
 }
 function promote_to_super_admin( $username )
 {
-	Password::user_grant_permission( $username, 'root' );
+	Password::grant_permission( $username, 'root' );
 }
 
 

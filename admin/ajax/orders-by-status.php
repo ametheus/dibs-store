@@ -15,7 +15,7 @@ foreach ( $_REQUEST as $k => $v )
 
 if ( count($status) == 0 ) die( "[]" );
 
-$cur = db()->carts->find($status);
+$cur = db()->carts->find($status)->sort(array("invoice-no" => 1, "created" => 1));
 $rv = array();
 
 while ( $cur->hasNext() )
