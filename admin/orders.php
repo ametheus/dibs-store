@@ -45,6 +45,7 @@ require_once( "assets/header.php" );
 			<tr>
 				<th>Inv. no.</th>
 				<th>Link</th>
+				<th>Name</th>
 				<th colspan="2">Items</th>
 				<th>Amount</th>
 				<th>Order status</th>
@@ -53,7 +54,7 @@ require_once( "assets/header.php" );
 		<tbody></tbody>
 		<tfoot>
 			<tr>
-				<th colspan="2">Total</th>
+				<th colspan="3">Total</th>
 				<td class="total right"></td>
 				<td class="total"></td>
 				<td class="total right"></td>
@@ -115,7 +116,8 @@ $(function()
 		
 		location.hash = preset;
 		
-		tb.empty();
+		tb.html('<tr style="background: none;"><td style="vertical-align: middle;" colspan="7">' +
+			'<i class="icon-spinner icon-spin icon-3x"></i> One moment please...</td></tr>');
 		total_foot.empty();
 		
 		// TODO:
@@ -127,6 +129,7 @@ $(function()
 			dataType: 'json',
 			success: function( data )
 			{
+				var rows = { html: "" };
 				var totals_by_ean = {};
 				
 				for ( var i = 0; i < data.length; i++ ) (function(i)
@@ -139,6 +142,7 @@ $(function()
 					// Invoice number
 					rv += '<td>' + cart["invoice-no"] + '</td>';
 					
+					
 					// Links
 					rv += '<td>';
 					
@@ -150,6 +154,10 @@ $(function()
 					rv += '<a href="download-invoice.php?cart-id=' + cart_id + '"><i class="icon-download"></i> Invoice</a>';
 					
 					rv += '</td>';
+					
+					
+					// The name on the billing address
+					rv += '<td>' + cart.address.billing.name + '</td>';
 					
 					// Cart items
 					var counts = '', titles = '';
@@ -213,9 +221,11 @@ $(function()
 					rv += '</tr>';
 					
 					
-					tb.append(rv);
+					rows.html += rv;
 					
 				})( i );
+				
+				tb.html( rows.html );
 				
 				var i = {i:0,t:0};
 				var add_total = function( X )
