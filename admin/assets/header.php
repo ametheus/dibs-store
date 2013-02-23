@@ -1,5 +1,12 @@
+<?php
+
+header( "Content-type: text/html; charset=UTF-8" );
+
+?><!DOCTYPE html>
 <html>
 	<head>
+		<meta charset="utf-8">
+		
 		<link rel="stylesheet" href="assets/css/dibs-admin.css"/>
 		
 		<link rel="stylesheet" href="assets/css/bootstrap.min.css">
