@@ -19,18 +19,42 @@ require_once( "lib/mongo.inc" );
 require_once( "lib/password.inc" );
 
 
-if ( ! Password::authenticate( @$_SERVER["PHP_AUTH_USER"], @$_SERVER["PHP_AUTH_PW"] ) )
+session_start();
+
+if ( !empty($_SESSION["username"]) )
 {
-	define( "AUTH_USER", null );
+	// User already logged in
+	define( "AUTH_USER", $_SESSION["username"] );
+}
+elseif ( !empty($_POST["username"]) && !empty($_POST["password"]) 
+	&& Password::authenticate( $_POST["username"], $_POST["password"] ))
+{
+	// User just logged in. Store the username in the session.
 	
-	header( 'WWW-Authenticate: basic realm="dibs"' );
-    header( 'HTTP/1.1 401 Unauthorized' );
-    
-    print( "If you didn't call dibs, you have no right to be here." );
-    exit;
+	$_SESSION["username"] = $_POST["username"];
+	define( "AUTH_USER", $_SESSION["username"] );
+}
+else
+{
+	// User not logged in. Redirect to the login page, and deny access.
+	define( "AUTH_USER", false );
+	
+	$continue = $_SERVER["REQUEST_URI"];
+	list($cf) = explode("?",$continue);
+	
+	// Of course, allow access to the login page.
+	if ( $cf != "{$api_root}admin/login.php" )
+	{
+		header( "HTTP/1.1 302 See Other" );
+		header( "Location: {$api_root}admin/login.php?continue=" . urlencode($continue) );
+		
+		print( "If you didn't call dibs, you have no right to be here." );
+		exit;
+	}
+	unset( $continue, $cf );
 }
 
-define( "AUTH_USER", $_SERVER["PHP_AUTH_USER"] );
+session_write_close();
 $USER_INFO = Password::get_user_info( AUTH_USER );
 
 
