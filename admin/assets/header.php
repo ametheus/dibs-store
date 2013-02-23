@@ -43,8 +43,11 @@ $link = function( $href )
 						<ul class="nav">
 							<?=$link( "orders.php" )?>Orders</a></li>
 						</ul>
-						<div style="float: right; padding: 6px 0px;">
-							<a href="<?=$api_root?>admin/logout.php"><i style="color: #777;" class="icon-signout icon-2x"></i></a>
+						<div style="float: right; padding: 6px 0px 6px 5px;">
+							<a title="Logout" href="<?=$api_root?>admin/logout.php"><i style="color: #777;" class="icon-signout icon-2x"></i></a>
+						</div>
+						<div style="float: right; padding: 6px 5px;">
+							<a title="Change password" href="<?=$api_root?>admin/change-password.php"><i style="color: #777;" class="icon-cog icon-2x"></i></a>
 						</div>
 					</div>
 				</div>
