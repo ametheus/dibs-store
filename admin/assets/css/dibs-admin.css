@@ -31,11 +31,16 @@ body
 .canvas
 {
 	width: 1240px;
-	margin-left: auto;
+	margin-top: 41px;
 	margin-right: auto;
+	margin-left: auto;
 	background-color: white;
 	box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
 	position: relative;
+}
+.navbar-fixed-top .container
+{
+	width: 1200px !important;
 }
 
 button
@@ -119,6 +124,7 @@ div.status-icon
 {
 	display: inline-block;
 	font-size: 14px;
+	line-height: 14px;
 	width: 14px;
 	height: 14px;
 	padding: 4px;
