@@ -43,7 +43,10 @@ $link = function( $href )
 						<ul class="nav">
 							<?=$link( "orders.php" )?>Orders</a></li>
 						</ul>
-					</div><!--/.nav-collapse -->
+						<div style="float: right; padding: 6px 0px;">
+							<a href="<?=$api_root?>admin/logout.php"><i style="color: #777;" class="icon-signout icon-2x"></i></a>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
